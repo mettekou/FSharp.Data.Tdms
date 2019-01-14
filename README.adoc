@@ -1,0 +1,11 @@
+= F# TDMS Support
+
+`FSharp.Data.Tdms` provides support for TDMS files [[the-ni-tdms-file-format]]<<#the-ni-tdms-file-format-entry,^[1]^>>. It allows a user to access these in a type-safe manner through a type provider, but also through functions.
+
+== License
+
+`FSharp.Data.Tdms` is licensed under an MIT License. Please refer to https://github.com/mettekou/FSharp.Data.Tdms/blob/master/LICENSE[`LICENSE`] for its full text.
+
+== References
+
+[[the-ni-tdms-file-format-entry]]<<#the-ni-tdms-file-format,^[1]^>> National Instruments. 2019. The NI TDMS File Format. (January 2019). Retrieved January 12, 2019 from `http://www.ni.com/white-paper/3727/en/`.

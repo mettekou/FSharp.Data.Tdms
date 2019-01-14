@@ -5,7 +5,14 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="Script.fsx" />
-    <Compile Include="Tdms.fs" />
+    <Compile Include="Type.fs" />
+    <Compile Include="Reads.fs" />
+    <Compile Include="Value.fs" />
+    <Compile Include="Segment.fs" />
+    <Compile Include="ProvidedTypes.fsi" />
+    <Compile Include="Index.fs" />
+    <Compile Include="ProvidedTypes.fs" />
+    <Compile Include="TdmsProvider.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
