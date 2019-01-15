@@ -1,16 +1,16 @@
-#load "Type.fs"
-#load "Reads.fs"
-#load "Value.fs"
-#load "Segment.fs"
-#load "Index.fs"
+#r "C:/TDLM/GreyMarket/FSharp.Data.Tdms/src/FSharp.Data.Tdms/bin/Debug/netstandard2.0/FSharp.Data.Tdms.dll"
 
 open System
 open System.IO
 open FSharp.Data.Tdms
 
-let path = @"%userprofile%\AVA0103F_04\18092200001\Log_2018-10-17_17·04·08__SPCurrSwp.tdms"
-//let path = @"/Users/mettekou/Documents/Projecten/mettekou/FSharp.Data.Tdms/Extended.tdms"
+let path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), @"AVA0103F_04\18092200001\Log_2018-10-17_17·04·08__SPCurrSwp.tdms")
+let resultsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Results.csv")
 
-let results = Index.read path |> Index.rawDataFor "/'Calculated channels'/'M_CAL_FLW_Diff'" |> Array.map (sprintf "%A" >> (fun s -> s.Replace(".", ","))) |> String.concat Environment.NewLine
+let stopWatch = System.Diagnostics.Stopwatch.StartNew()
+let file = File.read path
+let results = file |> File.rawData<float> "Calculated channels" "M_CAL_FLW_Diff"
 
-File.WriteAllText(@"C:\Users\Dylan.meysmans\Desktop\Results.csv", results)
+stopWatch.Stop()
+
+let time = stopWatch.Elapsed.TotalMilliseconds

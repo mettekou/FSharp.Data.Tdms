@@ -27,11 +27,6 @@ type RawDataIndex =
   | String of FSharp.Data.Tdms.Type * uint32 * uint64 * uint64
   | OtherType of FSharp.Data.Tdms.Type * uint32 * uint64
 
-type Property = {
-  Name : string
-  Value : Value
- }
-
 type Object = {
   Name : string
   RawDataIndex : RawDataIndex option
@@ -129,10 +124,10 @@ module Segment =
           | Type.I64 -> writer.Write(p.Value.Raw :?> int64)
           | Type.SingleFloat -> writer.Write(p.Value.Raw :?> float32)
           | Type.DoubleFloat -> writer.Write(p.Value.Raw :?> float)
-          ) (*| Type.String ->
+          | Type.String ->
             let value = p.Value.Raw :?> string
             writer.Write(uint32 value.Length)
-            writer.Write(value |> Encoding.UTF8.GetBytes)*)
+            writer.Write(value |> Encoding.UTF8.GetBytes))
           o.Properties
     ) segment.Objects
 
@@ -184,45 +179,71 @@ module Segment =
                 List.filter (List.exists (fun o' -> o.Name = o'.Name)) |>
                 List.tryPick (rawDataIndexFor' o)
 
-  let rawDataFor (previousSegments : Segment list) (channel : string) (reader : BinaryReader) (segment : Segment) =
+  let rawDataFor (previousSegments : Segment list) (channel : string) (segment : Segment) =
     if not (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsRawData))
-    then [||]
+    then []
     else
-      reader.BaseStream.Seek(int64 segment.Offset, SeekOrigin.Begin) |> ignore
+      let mutable position = segment.Offset
       let moi = List.tryFindIndex (fun o -> o.Name = channel) segment.Objects
       let mo = Option.bind (fun oi -> List.tryItem oi segment.Objects) moi
       match moi, mo with
-        | None, _ | _, None -> [||]
+        | None, _ | _, None -> []
         | Some oi, Some { RawDataIndex = mi } ->
             Option.fold (fun _ i ->
               match i with
                 | OtherType(ty, _, m) ->
-                  let ms = if segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData) then Reads.bigEndianMappings else Reads.littleEndianMappings
-                  let readValue =
-                    match ty with
-                      | Type.I32 -> ms.Int32 >> box
-                      | Type.U64 -> ms.UInt64 >> box
-                      | Type.DoubleFloat -> ms.Double >> box
-                      | _ -> fun _ -> box()
-                  reader.BaseStream.Seek(28L + int64 segment.LeadIn.RawDataOffset, SeekOrigin.Current) |> ignore
+                  position <- position + 28uL + segment.LeadIn.RawDataOffset
                   let before, _ = List.splitAt oi segment.Objects
                   let indices = List.map (fun o -> rawDataIndexFor previousSegments (Some o)) segment.Objects
-                  let chunkCount = countChunks indices segment.LeadIn.NextSegmentOffset segment.LeadIn.RawDataOffset
-                  let chunkSize = chunkDataSize indices
-                  // printfn "%i Chunks of %i Bytes" chunkCount chunkSize
-                  [| 
-                    //for i in 0uL..(chunkCount - 1) do
-                      //printfn "Iteration %i" (i + 1uL)
-                      //reader.BaseStream.Seek(int64 segment.Offset + int64 (i * chunkSize), SeekOrigin.Begin) |> ignore
-                      List.iter (fun o ->
+                  //let chunkCount = countChunks indices segment.LeadIn.NextSegmentOffset segment.LeadIn.RawDataOffset
+                  //let chunkSize = chunkDataSize indices
+                  List.iter (fun o ->
                         Option.iter (fun rdi ->
                           match rdi with
                             | String _ -> ()
-                            | OtherType(ty', _, m') -> reader.BaseStream.Seek(int64 (Type.size ty') * int64 m', SeekOrigin.Current) |> ignore)
-                         (rawDataIndexFor previousSegments (Some o))
-                       ) before
-                      for _ in 1uL..m ->
-                        readValue reader
-                  |]
-                | String _ -> [||]
-            ) [||] (rawDataIndexFor previousSegments mo)
+                            | OtherType(ty', _, m') -> position <- position + (uint64 (Type.size ty') * m'))
+                         (rawDataIndexFor previousSegments (Some o))) before
+                  [position, m]
+                | String _ -> []
+            ) [] (rawDataIndexFor previousSegments mo)
+  
+  type ObjectPath =
+    | Root
+    | Group of string
+    | Channel of string * string
+  
+  let structure (name : string) =
+    match name.Split([| "'"; "/" |], StringSplitOptions.RemoveEmptyEntries) with
+      | [||] -> Some Root
+      | [| name |] -> Some (Group name)
+      | [| groupName; name |] -> Some (Channel (groupName, name))
+      | _ -> None
+  
+  let indexToType index =
+    match index with
+      | OtherType (ty, _, _) -> ty
+      | String _ -> Type.String
+  
+  let typeToRead ``type`` bigEndian =
+    let mappings = if bigEndian then Reads.bigEndianMappings else Reads.littleEndianMappings
+    //printfn "%A" ``type``
+    match ``type`` with
+      | Type.Void -> (fun (r : BinaryReader) -> r.ReadByte()) >> ignore >> box
+      | Type.SingleFloat -> mappings.Single >> box
+      | Type.DoubleFloat -> mappings.Double >> box
+  
+  let addObject previousSegments segment ({ Properties = ps'; Groups = gs; } as index) ({ Name = n; Properties = ps'' } as object) =
+    let ps = List.map (fun (p : Property) -> p.Name, p.Value) ps'' |> Map.ofList
+    match structure n with
+      | None -> index
+      | Some Root -> { index with Properties = Map.fold (fun ps k v -> Map.add k v ps) ps' ps; Groups = gs }
+      | Some (Group name') -> { index with Groups = Map.add name' { Properties = ps; Channels = Map.empty } gs }
+      | Some (Channel (groupName, channelName)) ->
+        let group = Map.tryFind groupName gs |> Option.defaultValue { Properties = Map.empty; Channels = Map.empty }
+        let i = rawDataIndexFor previousSegments (Some object)
+        let ty = Option.fold (fun _ i' -> indexToType i') Type.Void i
+        let channel = { Read = typeToRead ty (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)); Type = Type.system ty; Properties = ps; RawDataBlocks = rawDataFor previousSegments n segment }
+        { index with Groups = Map.add groupName { group with Channels = Map.add channelName channel group.Channels } index.Groups }
+            
+  let index previousSegments ({ LeadIn = l; Objects = os } as segment) =
+    List.fold (addObject previousSegments segment) { Path = ""; Properties = Map.empty; Groups = Map.empty } os 

@@ -1,36 +1,25 @@
 namespace FSharp.Data.Tdms
 
+open System.IO
+
 type Index = {
-    Path : string
-    Segments : Segment list
+  Path : string
+  Properties : Map<string, Value>
+  Groups : Map<string, Group>
 }
 
 module Index =
-
-  open System.IO
-
-  let readSegments (reader : BinaryReader) =
-    List.unfold (fun s ->
-      if reader.BaseStream.Position = reader.BaseStream.Length
-      then None
-      else
-        let s' = Segment.read s reader
-        Some (s', Some s')
-    ) None
-
-  let write index =
-    use writer = new BinaryWriter(File.OpenWrite(index.Path + "_index"))
-    List.iter (Segment.writeIndex writer) index.Segments
-
-  let read (path : string) =
-    use reader = new BinaryReader(File.OpenRead(path))
-    { Path = path; Segments = readSegments reader }
   
-  let rawDataFor channel index =
+  let unionWith combiner m m' = Map.fold (fun ps k v ->
+    let oldChannel = Map.tryFind k m'
+    Map.add k (Option.fold (fun v c -> combiner v c) v oldChannel) ps) m' m
+  
+  let merge { Path = p; Properties = ps; Groups = gs } { Properties = ps'; Groups = gs' } =
+    { Path = p; Properties = Map.fold (fun ps k v -> Map.add k v ps) ps' ps; Groups = unionWith Group.merge gs gs' }
+  
+  let propertyValue<'T> name index =
+    Map.tryFind name index.Properties |> Option.bind (fun v -> if (Type.system v.Type).IsAssignableFrom(typeof<'T>) then Some(box v :?> 'T) else None)
+  
+  let rawData<'T> groupName channelName index =
     use reader = new BinaryReader(File.OpenRead(index.Path))
-    List.unfold (fun (todo, previousSegments) ->
-      match todo with
-         | [] -> None
-         | next :: todo ->
-             let data = Segment.rawDataFor previousSegments channel reader next
-             Some (data, (todo, next :: previousSegments))) (index.Segments, []) |> Array.concat
+    Map.tryFind groupName index.Groups |> Option.bind (fun g -> Map.tryFind channelName g.Channels) |> Option.bind (Channel.rawData<'T> reader)

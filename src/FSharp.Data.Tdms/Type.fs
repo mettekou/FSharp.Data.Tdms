@@ -25,18 +25,20 @@ type Type =
   | DaqMxRawData = 0xFFFFFFFFu
 
 module Type =
+  
   open System
+  open System.Numerics
 
-  let size ty =
-    match ty with
+  let size ``type`` =
+    match ``type`` with
     | Type.Void | Type.Boolean | Type.I8 | Type.U8 -> 1u
     | Type.I16 | Type.U16 -> 2u
     | Type.I32 | Type.U32 | Type.SingleFloat | Type.SingleFloatWithUnit -> 4u
-    | Type.I64 | Type.U64 | Type.DoubleFloat | Type.DoubleFloatWithUnit -> 8u
-    | Type.Timestamp -> 16u
+    | Type.I64 | Type.U64 | Type.DoubleFloat | Type.DoubleFloatWithUnit | Type.ComplexSingleFloat -> 8u
+    | Type.ComplexDoubleFloat | Type.Timestamp -> 16u
   
-  let system ty =
-    match ty with
+  let system ``type`` =
+    match ``type`` with
     | Type.Void -> typeof<unit>
     | Type.Boolean -> typeof<bool>
     | Type.I8 -> typeof<int8>
@@ -49,5 +51,6 @@ module Type =
     | Type.U64 -> typeof<uint64>
     | Type.SingleFloat | Type.SingleFloatWithUnit -> typeof<float32>
     | Type.DoubleFloat | Type.DoubleFloatWithUnit -> typeof<float>
+    | Type.ComplexSingleFloat | Type.ComplexDoubleFloat -> typeof<Complex>
     | Type.String -> typeof<string>
     | Type.Timestamp -> typeof<DateTime>

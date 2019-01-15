@@ -7,6 +7,7 @@ type Reads = {
   Int32 : BinaryReader -> int32
   UInt32 : BinaryReader -> uint32
   UInt64 : BinaryReader -> uint64
+  Single : BinaryReader -> float32
   Double : BinaryReader -> float
   String : BinaryReader -> string
   Timestamp : BinaryReader -> DateTime
@@ -24,6 +25,8 @@ module Reads =
   let readUInt32 (reader : BinaryReader) = reader.ReadUInt32()
 
   let readUInt64 (reader : BinaryReader) = reader.ReadUInt64()
+  
+  let readSingleFloat (reader : BinaryReader) = reader.ReadSingle()
 
   let readDoubleFloat (reader : BinaryReader) = reader.ReadDouble()
 
@@ -52,6 +55,8 @@ module Reads =
   let readUInt32Big (reader : BinaryReader) = BitConverter.ToUInt32(reader.ReadBytes 4 |> Array.rev, 0)
 
   let readUInt64Big (reader : BinaryReader) = BitConverter.ToUInt64(reader.ReadBytes 8 |> Array.rev, 0)
+  
+  let readSingleFloatBig (reader : BinaryReader) = BitConverter.ToSingle(reader.ReadBytes 4 |> Array.rev, 0)
 
   let readDoubleFloatBig (reader : BinaryReader) = BitConverter.ToDouble(reader.ReadBytes 8 |> Array.rev, 0)
 
@@ -73,6 +78,6 @@ module Reads =
       | Type.Timestamp -> readTimestampBig reader :> obj
       | x -> printfn "%A" x :> obj
 
-  let littleEndianMappings = { Int32 = readInt32; UInt32 = readUInt32; UInt64 = readUInt64; Double = readDoubleFloat; String = readString; Timestamp = readTimestamp; Type = readType; PropertyValue = readPropertyValue }
+  let littleEndianMappings = { Int32 = readInt32; UInt32 = readUInt32; UInt64 = readUInt64; Single = readSingleFloat; Double = readDoubleFloat; String = readString; Timestamp = readTimestamp; Type = readType; PropertyValue = readPropertyValue }
 
-  let bigEndianMappings = { Int32 = readInt32Big; UInt32 = readUInt32Big; UInt64 = readUInt64Big; Double = readDoubleFloatBig; String = readStringBig; Timestamp = readTimestampBig; Type = readTypeBig; PropertyValue = readPropertyValueBig }
+  let bigEndianMappings = { Int32 = readInt32Big; UInt32 = readUInt32Big; UInt64 = readUInt64Big; Single = readSingleFloatBig; Double = readDoubleFloatBig; String = readStringBig; Timestamp = readTimestampBig; Type = readTypeBig; PropertyValue = readPropertyValueBig }
