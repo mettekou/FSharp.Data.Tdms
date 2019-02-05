@@ -1,25 +1,26 @@
 type file
 id FSharp.Data.Tdms
+version 0.1.0
 authors
-    Steffen Forkmann, Gustavo Guerra, JohnDoeKyrgyz, Don Syme
+    Dylan Meysmans
 owners
-    Steffen Forkmann, Gustavo Guerra, JohnDoeKyrgyz, Don Syme
+    Dylan Meysmans
 projectUrl
-    http://github.com/fsprojects/FSharp.Data.Tdms
-iconUrl
-    https://raw.githubusercontent.com/fsprojects/FSharp.Data.Tdms/master/docs/files/img/logo.png
+    https://github.com/mettekou/FSharp.Data.Tdms
+copyright
+    Copyright 2018
 licenseUrl
-    http://github.com/fsprojects/FSharp.Data.Tdms/blob/master/LICENSE.txt
+    https://github.com/mettekou/FSharp.Data.Tdms/blob/master/LICENSE
 requireLicenseAcceptance
     false
 tags
-    F# fsharp typeproviders FSharp.Data.Tdms
+    F# fsharp typeproviders tdms
 summary
-    This library is for the .NET platform implementing FSharp.Data.Tdms.
+    TDMS support for F#
 description
-    This library is for the .NET platform implementing FSharp.Data.Tdms.
+    TDMS support for F#
 tags
-    F# fsharp typeproviders FSharp.Data.Tdms
+    F# fsharp typeproviders tdms
 files
     bin/Release/net45/FSharp.Data.Tdms.Runtime.* ==> lib/net45
     bin/Release/netstandard2.0/FSharp.Data.Tdms.Runtime.* ==> lib/netstandard2.0
