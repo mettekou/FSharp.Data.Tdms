@@ -23,6 +23,10 @@ module Index =
   let unsafeGroup name index =
     Map.tryFind name index.Groups |> Option.get
   
-  let rawData<'T> groupName channelName index =
+  let tryRawData<'T> groupName channelName index =
     use reader = new BinaryReader(File.OpenRead(index.Path))
     Map.tryFind groupName index.Groups |> Option.bind (fun g -> Map.tryFind channelName g.Channels) |> Option.bind (Channel.rawData<'T> reader)
+
+  let tryGroup groupName { Groups = groups } = Map.tryFind groupName groups
+
+  let tryChannel groupName channelName index = tryGroup groupName index |> Option.bind (Group.tryChannel channelName)

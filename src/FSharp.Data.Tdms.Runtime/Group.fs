@@ -1,5 +1,7 @@
 namespace FSharp.Data.Tdms
 
+open System.Collections.Generic
+
 type Group = {
   Properties : Map<string, Value>
   Channels : Map<string, Channel>
@@ -18,5 +20,7 @@ module Group =
   let unsafePropertyValue name group =
     Map.tryFind name group.Properties |> Option.get |> (fun v -> v.Raw)
   
+  let tryChannel channelName group = Map.tryFind channelName group.Channels
+
   let unsafeChannel name group =
     Map.tryFind name group.Channels |> Option.get
