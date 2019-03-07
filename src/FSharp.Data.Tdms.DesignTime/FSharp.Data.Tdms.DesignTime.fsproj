@@ -19,6 +19,9 @@
       <Paket>True</Paket>
       <Link>paket-files/ProvidedTypes.fs</Link>
     </Compile>
+    <Compile Include="..\FSharp.Data.Tdms.Runtime\Map.fs">
+      <Link>Map.fs</Link>
+    </Compile>
     <Compile Include="..\FSharp.Data.Tdms.Runtime\Type.fs">
       <Link>Type.fs</Link>
     </Compile>

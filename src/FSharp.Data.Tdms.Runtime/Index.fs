@@ -1,7 +1,5 @@
 namespace FSharp.Data.Tdms
 
-open System.IO
-
 type Index = {
   Path : string
   Properties : Map<string, Value>
@@ -9,13 +7,12 @@ type Index = {
 }
 
 module Index =
-  
-  let unionWith combiner m m' = Map.fold (fun ps k v ->
-    let oldChannel = Map.tryFind k m'
-    Map.add k (Option.fold (fun v c -> combiner v c) v oldChannel) ps) m' m
+
+  open System.IO
+  open FSharp.Collections
   
   let merge { Path = p; Properties = ps; Groups = gs } { Properties = ps'; Groups = gs' } =
-    { Path = p; Properties = Map.fold (fun ps k v -> Map.add k v ps) ps' ps; Groups = unionWith Group.merge gs gs' }
+    { Path = p; Properties = Map.fold (fun ps k v -> Map.add k v ps) ps' ps; Groups = Map.unionWith Group.merge gs gs' }
   
   let propertyValue<'T> name index =
     Map.tryFind name index.Properties |> Option.bind (fun v -> if (Type.system v.Type).IsAssignableFrom(typeof<'T>) then Some(box v.Raw :?> 'T) else None)
