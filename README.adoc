@@ -44,14 +44,18 @@ When using `FSharp.Data.Tdms` from C#, prefer the API for idiomatic C#:
 
 [source,csharp]
 ----
+using System;
 using FSharp.Data.Tdms;
 
-class Program {
-    public static void Main(string[] args) {
-        double[] data;
-        File.Read("Experiment.tdms").TryGetRawData<double>("Group1", "Channel1", out data);
-        foreach (double sample in data) {
-            Console.WriteLine(d);
+class Program
+{
+    static void Main(string[] args)
+    {
+        File.Read("Experiment.tdms").TryGetRawData("Group1", "Channel1", out double[] data);
+
+        foreach (double sample in data)
+        {
+            Console.WriteLine(sample);
         }
     }
 }
