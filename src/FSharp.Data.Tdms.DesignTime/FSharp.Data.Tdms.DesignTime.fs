@@ -33,7 +33,7 @@ type TdmsProvider (config : TypeProviderConfig) as this =
       root.AddMember(indexField)
       root.AddMember(constructor)
       for (n, p) in Map.toList index.Properties do
-        ProvidedProperty(n, Type.system p.Type, getterCode = fun args -> <@@ Index.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], indexField)) : Index) @@>) |> root.AddMember
+        ProvidedProperty(n, Type.system p.Type |> Option.defaultValue typeof<unit>, getterCode = fun args -> <@@ Index.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], indexField)) : Index) @@>) |> root.AddMember
       for (gn, g) in Map.toList index.Groups do
         let group = ProvidedTypeDefinition(asm, ns, gn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
         root.AddMember(group)
@@ -46,7 +46,7 @@ type TdmsProvider (config : TypeProviderConfig) as this =
         group.AddMember(groupConstructor)
         ProvidedProperty(propertyName = gn, propertyType = group.AsType(), getterCode = fun args -> Expr.NewObject(groupConstructor, [(<@@ Index.unsafeGroup gn (%%(Expr.FieldGet(args.[0], indexField)) : Index) @@>); <@@ (%%(Expr.FieldGet(args.[0], indexField)) : Index) @@>])) |> root.AddMember
         for (n, p) in Map.toList g.Properties do
-          ProvidedProperty(propertyName = n, propertyType = Type.system p.Type, getterCode = fun args -> <@@ Group.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], groupField)) : Group) @@>) |> group.AddMember
+          ProvidedProperty(propertyName = n, propertyType = (Type.system p.Type |> Option.defaultValue typeof<unit>), getterCode = fun args -> <@@ Group.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], groupField)) : Group) @@>) |> group.AddMember
         for (cn, c) in Map.toList g.Channels do
           let channel = ProvidedTypeDefinition(asm, ns, cn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
           group.AddMember(channel)
@@ -58,7 +58,7 @@ type TdmsProvider (config : TypeProviderConfig) as this =
           channel.AddMember(channelConstructor)
           ProvidedProperty(propertyName = cn, propertyType = channel.AsType(), getterCode = fun args -> Expr.NewObject(channelConstructor, [(<@@ Group.unsafeChannel cn (%%(Expr.FieldGet(args.[0], groupField)) : Group) @@>); (<@@ (%%(Expr.FieldGet(args.[0], groupPathField)) : Index) @@>)])) |> group.AddMember
           for (cpn, cp) in Map.toList c.Properties do
-            ProvidedProperty(propertyName = cpn, propertyType = Type.system cp.Type, getterCode = fun args -> <@@ Channel.unsafePropertyValue cpn (%%(Expr.FieldGet(args.[0], channelField)) : Channel) @@>) |> channel.AddMember
+            ProvidedProperty(propertyName = cpn, propertyType = (Type.system cp.Type |> Option.defaultValue typeof<unit>), getterCode = fun args -> <@@ Channel.unsafePropertyValue cpn (%%(Expr.FieldGet(args.[0], channelField)) : Channel) @@>) |> channel.AddMember
           ProvidedProperty(propertyName = "Data", propertyType = c.Type.MakeArrayType(), getterCode = let ty = c.Type in fun args -> <@@ rawData ty gn cn (%%(Expr.FieldGet(args.[0], channelPathField)) : Index) @@>) |> channel.AddMember
       asm.AddTypes([root])
       root

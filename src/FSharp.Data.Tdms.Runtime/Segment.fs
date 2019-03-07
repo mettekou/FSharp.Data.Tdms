@@ -103,12 +103,12 @@ module Segment =
         | None -> writer.Write(0xFFFFFFFFu)
         | Some(OtherType(ty, m, n)) ->
           writer.Write(20u)
-          writer.Write(uint32 ty)
+          writer.Write(Type.id ty)
           writer.Write(m)
           writer.Write(n)
         | Some(String(ty, m, n, o)) ->
           writer.Write(28u)
-          writer.Write(uint32 ty)
+          writer.Write(Type.id ty)
           writer.Write(m)
           writer.Write(n)
           writer.Write(o)
@@ -118,7 +118,7 @@ module Segment =
         //printfn "%X" (Array.length obs)
         writer.Write(Array.length pbs |> uint32)
         writer.Write(pbs)
-        writer.Write(uint32 p.Value.Type)
+        writer.Write(Type.id p.Value.Type)
         match p.Value.Type with
           | Type.I32 -> writer.Write(p.Value.Raw :?> int32)
           | Type.I64 -> writer.Write(p.Value.Raw :?> int64)
@@ -140,7 +140,7 @@ module Segment =
   let chunkDataSize indices = List.sum (List.map (fun i ->
       match i with
         | None -> 0uL
-        | Some(OtherType(ty, d, c)) -> uint64 (Type.size ty) * uint64 d * c
+        | Some(OtherType(ty, d, c)) -> uint64 (Type.size ty |> Option.defaultValue 1u) * uint64 d * c
         | Some(String(_, _, _, s)) -> s
     ) indices)
 
@@ -201,7 +201,7 @@ module Segment =
                         Option.iter (fun rdi ->
                           match rdi with
                             | String _ -> ()
-                            | OtherType(ty', _, m') -> position <- position + (uint64 (Type.size ty') * m'))
+                            | OtherType(ty', _, m') -> position <- position + (uint64 (Type.size ty' |> Option.defaultValue 0u) * m'))
                          (rawDataIndexFor previousSegments (Some o))) before
                   [position, m]
                 | String _ -> []
@@ -242,7 +242,7 @@ module Segment =
         let group = Map.tryFind groupName gs |> Option.defaultValue { Properties = Map.empty; Channels = Map.empty }
         let i = rawDataIndexFor previousSegments (Some object)
         let ty = Option.fold (fun _ i' -> indexToType i') Type.Void i
-        let channel = { Read = typeToRead ty (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)); Type = Type.system ty; Properties = ps; RawDataBlocks = rawDataFor previousSegments n segment }
+        let channel = { Read = typeToRead ty (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)); Type = Type.system ty |> Option.defaultValue typeof<unit>; Properties = ps; RawDataBlocks = rawDataFor previousSegments n segment }
         { index with Groups = Map.add groupName { group with Channels = Map.add channelName channel group.Channels } index.Groups }
             
   let index previousSegments ({ LeadIn = l; Objects = os } as segment) =

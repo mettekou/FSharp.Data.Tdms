@@ -16,7 +16,7 @@ module Channel =
     { Type = ty'; Properties = Map.fold (fun ps k v -> Map.add k v ps) ps' ps; Read = r'; RawDataBlocks = List.append bs bs'  }
   
   let propertyValue<'T> name channel =
-    Map.tryFind name channel.Properties |> Option.bind (fun v -> if (Type.system v.Type).IsAssignableFrom(typeof<'T>) then Some(box v :?> 'T) else None)
+    Map.tryFind name channel.Properties |> Option.bind (fun v -> if (Type.system v.Type |> Option.defaultValue typeof<unit>).IsAssignableFrom(typeof<'T>) then Some(box v :?> 'T) else None)
   
   let unsafePropertyValue name channel =
     Map.tryFind name channel.Properties |> Option.get |> (fun v -> v.Raw)

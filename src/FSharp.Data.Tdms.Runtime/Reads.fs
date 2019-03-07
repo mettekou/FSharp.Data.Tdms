@@ -30,7 +30,7 @@ module Reads =
 
   let readDoubleFloat (reader : BinaryReader) = reader.ReadDouble()
 
-  let readType (reader : BinaryReader) = readUInt32 reader |> LanguagePrimitives.EnumOfValue
+  let readType (reader : BinaryReader) = readUInt32 reader |> Type.ofId |> Option.defaultValue Type.Void
 
   let readString (reader : BinaryReader) = readUInt32 reader |> int |> reader.ReadBytes |> Encoding.UTF8.GetString
 
@@ -60,7 +60,7 @@ module Reads =
 
   let readDoubleFloatBig (reader : BinaryReader) = BitConverter.ToDouble(reader.ReadBytes 8 |> Array.rev, 0)
 
-  let readTypeBig (reader : BinaryReader) = readUInt32Big reader |> LanguagePrimitives.EnumOfValue
+  let readTypeBig (reader : BinaryReader) = readUInt32Big reader |> Type.ofId |> Option.defaultValue Type.Void
 
   let readStringBig (reader : BinaryReader) = readUInt32Big reader |> int |> reader.ReadBytes |> Encoding.UTF8.GetString
 
