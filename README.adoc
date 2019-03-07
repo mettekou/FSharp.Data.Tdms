@@ -6,6 +6,26 @@
 
 `FSharp.Data.Tdms` is licensed under an MIT License. Please refer to https://github.com/mettekou/FSharp.Data.Tdms/blob/master/LICENSE[`LICENSE`] for its full text.
 
+== Usage
+
+Using the generative type provider, given a TDMS file `Experiment.tdms` with a channel containing floating-point values named `Channel1` within a group named `Group1`:
+
+[source,fsharp]
+----
+open FSharp.Data
+
+[<Literal>]
+let Path = "Experiment.tdms"
+
+type Experiment = TdmsProvider<Path>
+
+let experiment = Experiment(Path)
+
+experiment.Group1.Channel1.Data |> Array.iter (printfn "%f")
+----
+
+Alternatively, use the functions in the `FSharp.Data.Tdms` module.
+
 == References
 
 [[the-ni-tdms-file-format-entry]]<<#the-ni-tdms-file-format,^[1]^>> National Instruments. 2019. The NI TDMS File Format. (January 2019). Retrieved January 12, 2019 from `http://www.ni.com/white-paper/3727/en/`.
