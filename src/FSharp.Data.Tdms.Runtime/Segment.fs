@@ -164,22 +164,17 @@ module Segment =
         Option.map (fun s -> s.Objects) previousSegment |> Option.defaultValue []
     reader.BaseStream.Seek(metaDataStart + int64 leadIn.NextSegmentOffset, SeekOrigin.Begin) |> ignore
     { Offset = offset; LeadIn = leadIn; Objects = objects }
-
-  let rawDataIndexFor' object objects =
-    List.tryFind (fun o -> o.Name = object.Name) objects |> Option.bind (fun o -> o.RawDataIndex)
   
-  let rawDataIndexFor previousSegments object =
+  let rawDataIndexFor previousObjects object =
     match object with
       | None -> None
       | Some o ->
           match o.RawDataIndex with
             | Some _ -> o.RawDataIndex
-            | None -> previousSegments |>
-                List.map (fun s -> s.Objects) |>
-                List.filter (List.exists (fun o' -> o.Name = o'.Name)) |>
-                List.tryPick (rawDataIndexFor' o)
+            | None -> Map.tryFind o.Name previousObjects |>
+                      Option.bind (fun o -> o.RawDataIndex)
 
-  let rawDataFor (previousSegments : Segment list) (channel : string) (segment : Segment) =
+  let rawDataFor previousObjects (channel : string) (segment : Segment) =
     if not (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsRawData))
     then []
     else
@@ -194,7 +189,7 @@ module Segment =
                 | OtherType(ty, _, m) ->
                   position <- position + 28uL + segment.LeadIn.RawDataOffset
                   let before, _ = List.splitAt oi segment.Objects
-                  let indices = List.map (fun o -> rawDataIndexFor previousSegments (Some o)) segment.Objects
+                  //let indices = List.map (fun o -> rawDataIndexFor previousSegments (Some o)) segment.Objects
                   //let chunkCount = countChunks indices segment.LeadIn.NextSegmentOffset segment.LeadIn.RawDataOffset
                   //let chunkSize = chunkDataSize indices
                   List.iter (fun o ->
@@ -202,10 +197,10 @@ module Segment =
                           match rdi with
                             | String _ -> ()
                             | OtherType(ty', _, m') -> position <- position + (uint64 (Type.size ty' |> Option.defaultValue 0u) * m'))
-                         (rawDataIndexFor previousSegments (Some o))) before
+                         (rawDataIndexFor previousObjects (Some o))) before
                   [position, m]
                 | String _ -> []
-            ) [] (rawDataIndexFor previousSegments mo)
+            ) [] (rawDataIndexFor previousObjects mo)
   
   type ObjectPath =
     | Root
@@ -232,7 +227,7 @@ module Segment =
       | Type.SingleFloat -> mappings.Single >> box
       | Type.DoubleFloat -> mappings.Double >> box
   
-  let addObject previousSegments segment ({ Properties = ps'; Groups = gs; } as index) ({ Name = n; Properties = ps'' } as object) =
+  let addObject previousObjects segment ({ Properties = ps'; Groups = gs; } as index) ({ Name = n; Properties = ps'' } as object) =
     let ps = List.map (fun (p : Property) -> p.Name, p.Value) ps'' |> Map.ofList
     match structure n with
       | None -> index
@@ -240,10 +235,10 @@ module Segment =
       | Some (Group name') -> { index with Groups = Map.add name' { Properties = ps; Channels = Map.empty } gs }
       | Some (Channel (groupName, channelName)) ->
         let group = Map.tryFind groupName gs |> Option.defaultValue { Properties = Map.empty; Channels = Map.empty }
-        let i = rawDataIndexFor previousSegments (Some object)
+        let i = rawDataIndexFor previousObjects (Some object)
         let ty = Option.fold (fun _ i' -> indexToType i') Type.Void i
-        let channel = { Read = typeToRead ty (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)); Type = Type.system ty |> Option.defaultValue typeof<unit>; Properties = ps; RawDataBlocks = rawDataFor previousSegments n segment }
+        let channel = { Read = typeToRead ty (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)); Type = Type.system ty |> Option.defaultValue typeof<unit>; Properties = ps; RawDataBlocks = rawDataFor previousObjects n segment }
         { index with Groups = Map.add groupName { group with Channels = Map.add channelName channel group.Channels } index.Groups }
             
-  let index previousSegments ({ LeadIn = l; Objects = os } as segment) =
-    List.fold (addObject previousSegments segment) { Path = ""; Properties = Map.empty; Groups = Map.empty } os 
+  let index previousObjects ({ LeadIn = l; Objects = os } as segment) =
+    List.fold (addObject previousObjects segment) { Path = ""; Properties = Map.empty; Groups = Map.empty } os 
