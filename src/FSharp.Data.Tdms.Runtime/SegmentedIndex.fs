@@ -8,6 +8,7 @@ type SegmentedIndex = {
 module SegmentedIndex =
   
   open System.IO
+  open FSharp.Collections
 
   let readSegments (reader : BinaryReader) =
     List.unfold (fun s ->

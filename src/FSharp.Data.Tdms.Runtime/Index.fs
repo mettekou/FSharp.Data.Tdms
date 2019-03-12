@@ -14,8 +14,8 @@ module Index =
   let merge { Path = p; Properties = ps; Groups = gs } { Properties = ps'; Groups = gs' } =
     { Path = p; Properties = Map.fold (fun ps k v -> Map.add k v ps) ps' ps; Groups = Map.unionWith Group.merge gs gs' }
   
-  let propertyValue<'T> name index =
-    Map.tryFind name index.Properties |> Option.bind (fun v -> if (Type.system v.Type |> Option.defaultValue typeof<unit>).IsAssignableFrom(typeof<'T>) then Some(box v.Raw :?> 'T) else None)
+  let tryPropertyValue<'T> name index =
+    Map.tryFind name index.Properties |> Option.bind Value.tryGet<'T>
     
   let unsafePropertyValue name index =
     Map.tryFind name index.Properties |> Option.get |> (fun v -> v.Raw)

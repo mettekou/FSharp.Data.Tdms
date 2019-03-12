@@ -27,7 +27,7 @@ module File =
     /// Gets the value of a property associated with the file.
     /// </summary>
     let tryPropertyValue<'T> propertyName { Index = index } =
-        Index.propertyValue<'T> propertyName index
+        Index.tryPropertyValue<'T> propertyName index
     
     let tryGroup groupName { Index = index } =
         Index.tryGroup groupName index
@@ -72,7 +72,7 @@ type File with
     /// Tries to get a property value for the given group in the given TDMS file.
     /// </summary>
     member file.TryGetPropertyValue<'T> (propertyName, groupName, [<Out>] propertyValue : byref<'T>) =
-        match Index.tryGroup groupName file.Index |> Option.bind (Group.propertyValue<'T> propertyName) with
+        match Index.tryGroup groupName file.Index |> Option.bind (Group.tryPropertyValue<'T> propertyName) with
             | None -> false
             | Some pv ->
                 propertyValue <- pv
@@ -82,7 +82,7 @@ type File with
     /// Tries to get a property value for the given channel, belonging to the given group in the given TDMS file.
     /// </summary>
     member file.TryGetPropertyValue<'T> (propertyName, groupName, channelName, [<Out>] propertyValue : byref<'T>) =
-        match Index.tryGroup groupName file.Index |> Option.bind (Group.tryChannel channelName) |> Option.bind (Channel.propertyValue<'T> propertyName) with
+        match Index.tryGroup groupName file.Index |> Option.bind (Group.tryChannel channelName) |> Option.bind (Channel.tryPropertyValue<'T> propertyName) with
             | None -> false
             | Some pv ->
                 propertyValue <- pv
