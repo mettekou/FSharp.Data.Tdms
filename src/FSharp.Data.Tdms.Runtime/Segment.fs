@@ -24,6 +24,7 @@ type LeadIn = {
  }
 
 type RawDataIndex =
+  | AsBefore
   | String of FSharp.Data.Tdms.Type * uint32 * uint64 * uint64
   | OtherType of FSharp.Data.Tdms.Type * uint32 * uint64
 
@@ -60,7 +61,7 @@ module Segment =
 
   let readRawDataIndex name previous reader mappings =
     match mappings.UInt32 reader with
-      | 0u -> Option.bind (fun s -> List.tryFind (fun o -> o.Name = name) s.Objects) previous |> Option.bind (fun o -> o.RawDataIndex)
+      | 0u -> Some AsBefore
       | 20u -> OtherType(mappings.Type reader, mappings.UInt32 reader, mappings.UInt64 reader) |> Some
       | 28u -> String(mappings.Type reader, mappings.UInt32 reader, mappings.UInt64 reader, mappings.UInt64 reader) |> Some
       | _ -> None
@@ -101,7 +102,8 @@ module Segment =
       writer.Write(obs)
       match o.RawDataIndex with
         | None -> writer.Write(0xFFFFFFFFu)
-        | Some(OtherType(ty, m, n)) ->
+        | Some AsBefore -> writer.Write(0x00000000u)
+        | Some (OtherType (ty, m, n)) ->
           writer.Write(20u)
           writer.Write(Type.id ty)
           writer.Write(m)
@@ -137,7 +139,7 @@ module Segment =
       List.tryFind (fun o' -> o'.Name = o.Name) objects |> Option.map (fun o -> o :: os) |> Option.defaultValue os
     ) [] previousObjects) newObjects
 
-  let chunkDataSize indices = List.sum (List.map (fun i ->
+  (*let chunkDataSize indices = List.sum (List.map (fun i ->
       match i with
         | None -> 0uL
         | Some(OtherType(ty, d, c)) -> uint64 (Type.size ty |> Option.defaultValue 1u) * uint64 d * c
@@ -147,7 +149,7 @@ module Segment =
   let countChunks indices nextSegmentOffset rawDataOffset =
     let totalDataSize = nextSegmentOffset - rawDataOffset
     let chunkSize = chunkDataSize indices
-    if chunkSize = 0uL then 0uL else totalDataSize / chunkSize
+    if chunkSize = 0uL then 0uL else totalDataSize / chunkSize*)
 
   let read previousSegment (reader : BinaryReader) =
     let offset = uint64 reader.BaseStream.Position
@@ -170,9 +172,9 @@ module Segment =
       | None -> None
       | Some o ->
           match o.RawDataIndex with
+            | Some AsBefore -> Map.tryFind o.Name previousObjects |> Option.bind (fun o -> o.RawDataIndex)
             | Some _ -> o.RawDataIndex
-            | None -> Map.tryFind o.Name previousObjects |>
-                      Option.bind (fun o -> o.RawDataIndex)
+            | None -> None
 
   let rawDataFor previousObjects (channel : string) (segment : Segment) =
     if not (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsRawData))
@@ -186,6 +188,7 @@ module Segment =
         | Some oi, Some { RawDataIndex = mi } ->
             Option.fold (fun _ i ->
               match i with
+                | AsBefore -> []
                 | OtherType(ty, _, m) ->
                   position <- position + 28uL + segment.LeadIn.RawDataOffset
                   let before, _ = List.splitAt oi segment.Objects
@@ -195,11 +198,12 @@ module Segment =
                   List.iter (fun o ->
                         Option.iter (fun rdi ->
                           match rdi with
-                            | String _ -> ()
+                            | AsBefore -> ()
+                            | String _ -> raise (NotImplementedException ())
                             | OtherType(ty', _, m') -> position <- position + (uint64 (Type.size ty' |> Option.defaultValue 0u) * m'))
                          (rawDataIndexFor previousObjects (Some o))) before
                   [position, m]
-                | String _ -> []
+                | String _ -> raise (NotImplementedException ())
             ) [] (rawDataIndexFor previousObjects mo)
   
   type ObjectPath =
@@ -214,10 +218,17 @@ module Segment =
       | [| groupName; name |] -> Some (Channel (groupName, name))
       | _ -> None
   
-  let indexToType index =
-    match index with
-      | OtherType (ty, _, _) -> ty
-      | String _ -> Type.String
+  let indexToType previousObjects (object : Object) =
+    let indexToType' index =
+      match index with
+        | None | Some AsBefore -> None
+        | Some (OtherType (ty, _, _)) -> Some ty
+        | Some (String _) -> Some Type.String
+    match object.RawDataIndex with
+      | None -> None
+      | Some AsBefore -> Map.tryFind object.Name previousObjects |> Option.bind (fun o -> o.RawDataIndex) |> indexToType'
+      | Some (OtherType (ty, _, _)) -> Some ty
+      | Some (String _) -> Some Type.String
   
   let typeToRead ``type`` bigEndian =
     let mappings = if bigEndian then Reads.bigEndianMappings else Reads.littleEndianMappings
@@ -236,7 +247,7 @@ module Segment =
       | Some (Channel (groupName, channelName)) ->
         let group = Map.tryFind groupName gs |> Option.defaultValue { Properties = Map.empty; Channels = Map.empty }
         let i = rawDataIndexFor previousObjects (Some object)
-        let ty = Option.fold (fun _ i' -> indexToType i') Type.Void i
+        let ty = indexToType previousObjects object |> Option.defaultValue Type.Void
         let channel = { Read = typeToRead ty (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)); Type = Type.system ty |> Option.defaultValue typeof<unit>; Properties = ps; RawDataBlocks = rawDataFor previousObjects n segment }
         { index with Groups = Map.add groupName { group with Channels = Map.add channelName channel group.Channels } index.Groups }
             
