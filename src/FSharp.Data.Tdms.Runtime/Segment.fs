@@ -43,6 +43,7 @@ type Segment = {
 module Segment =
 
   open System.IO
+  open System.Numerics
 
   let readTdsm (reader : BinaryReader) =
     reader.ReadBytes 4 |> ignore
@@ -109,7 +110,7 @@ module Segment =
           writer.Write(Type.id ty)
           writer.Write(m)
           writer.Write(n)
-        | Some(String(ty, m, n, o)) ->
+        | Some (String (ty, m, n, o)) ->
           writer.Write(28u)
           writer.Write(Type.id ty)
           writer.Write(m)
@@ -122,19 +123,35 @@ module Segment =
         writer.Write(pbs)
         writer.Write(Type.id p.Value.Type)
         match p.Value.Type with
+          | Type.Void -> writer.Write(0uy)
+          | Type.Boolean -> writer.Write(p.Value.Raw :?> bool)
+          | Type.I8 -> writer.Write(p.Value.Raw :?> int8)
+          | Type.U8 -> writer.Write(p.Value.Raw :?> uint8)
+          | Type.I16 -> writer.Write(p.Value.Raw :?> int16)
+          | Type.U16 -> writer.Write(p.Value.Raw :?> uint16)
           | Type.I32 -> writer.Write(p.Value.Raw :?> int32)
+          | Type.U32 -> writer.Write(p.Value.Raw :?> uint32)
           | Type.I64 -> writer.Write(p.Value.Raw :?> int64)
+          | Type.U64 -> writer.Write(p.Value.Raw :?> uint64)
           | Type.SingleFloat -> writer.Write(p.Value.Raw :?> float32)
           | Type.DoubleFloat -> writer.Write(p.Value.Raw :?> float)
+          | Type.ComplexDoubleFloat -> 
+            let complex = p.Value.Raw :?> Complex
+            writer.Write(complex.Real)
+            writer.Write(complex.Imaginary)
           | Type.String ->
             let value = p.Value.Raw :?> string
             writer.Write(uint32 value.Length)
-            writer.Write(value |> Encoding.GetEncoding(1252).GetBytes))
+            writer.Write(value |> Encoding.GetEncoding(1252).GetBytes)
+          | Type.Timestamp -> 
+              let t = (p.Value.Raw :?> DateTime).ToUniversalTime() - new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+              writer.Write(uint64 ((t.TotalSeconds % 1.) * float UInt64.MaxValue))
+              writer.Write(int64 t.TotalSeconds))
           o.Properties
     ) segment.Objects
 
   let merge previousObjects objects =
-    let updatedObjects, newObjects = List.partition (fun o -> List.tryFind (fun o' -> o'.Name = o.Name) previousObjects |> Option.isNone) objects
+    let _, newObjects = List.partition (fun o -> List.tryFind (fun o' -> o'.Name = o.Name) previousObjects |> Option.isNone) objects
     List.append (List.fold (fun os o ->
       List.tryFind (fun o' -> o'.Name = o.Name) objects |> Option.map (fun o -> o :: os) |> Option.defaultValue os
     ) [] previousObjects) newObjects
@@ -232,11 +249,22 @@ module Segment =
   
   let typeToRead ``type`` bigEndian =
     let mappings = if bigEndian then Reads.bigEndianMappings else Reads.littleEndianMappings
-    //printfn "%A" ``type``
     match ``type`` with
-      | Type.Void -> (fun (r : BinaryReader) -> r.ReadByte()) >> ignore >> box
+      | Type.Void -> mappings.Void >> box
+      | Type.Boolean -> mappings.Bool >> box
+      | Type.I8 -> mappings.Int8 >> box
+      | Type.U8 -> mappings.UInt8 >> box
+      | Type.I16 -> mappings.Int16 >> box
+      | Type.U16 -> mappings.UInt16 >> box
+      | Type.I32 -> mappings.Int32 >> box
+      | Type.U32 -> mappings.UInt32 >> box
+      | Type.I64 -> mappings.Int64 >> box
+      | Type.U64 -> mappings.UInt64 >> box
       | Type.SingleFloat -> mappings.Single >> box
       | Type.DoubleFloat -> mappings.Double >> box
+      | Type.ComplexDoubleFloat -> mappings.DoubleComplex >> box
+      | Type.String -> mappings.String >> box
+      | Type.Timestamp -> mappings.Timestamp >> box
   
   let addObject previousObjects segment ({ Properties = ps'; Groups = gs; } as index) ({ Name = n; Properties = ps'' } as object) =
     let ps = List.map (fun (p : Property) -> p.Name, p.Value) ps'' |> Map.ofList
