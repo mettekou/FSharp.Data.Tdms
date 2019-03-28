@@ -88,6 +88,9 @@ module Segment =
   let tdsm = [| 0x54uy; 0x44uy; 0x53uy; 0x6Duy |]
 
   let writeIndex (writer : BinaryWriter) segment =
+    #if NETCORE2_0 || NETSTANDARD2_0
+    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
+    #endif
     writer.Write(tdsh)
     writer.Write(uint32 segment.LeadIn.TableOfContents)
     writer.Write(uint32 segment.LeadIn.Version)
@@ -95,10 +98,8 @@ module Segment =
     writer.Write(segment.LeadIn.RawDataOffset)
     writer.Write(uint32 segment.Objects.Length)
     List.iter (fun o ->
-      //printfn "%s" o.Name
-      let obs = Encoding.UTF8.GetBytes(o.Name)
-      //Array.iter (printfn "%X") obs
-      writer.Write(Array.length obs |> uint32)
+      let obs = Encoding.GetEncoding(1252).GetBytes(o.Name)
+      writer.Write(Encoding.GetEncoding(1252).GetByteCount(o.Name) |> uint32)
       writer.Write(obs)
       match o.RawDataIndex with
         | None -> writer.Write(0xFFFFFFFFu)
@@ -116,9 +117,8 @@ module Segment =
           writer.Write(o)
       writer.Write(List.length o.Properties |> uint32)
       List.iter (fun (p : Property) ->
-        let pbs = Encoding.UTF8.GetBytes(p.Name)
-        //printfn "%X" (Array.length obs)
-        writer.Write(Array.length pbs |> uint32)
+        let pbs = Encoding.GetEncoding(1252).GetBytes(p.Name)
+        writer.Write(Encoding.GetEncoding(1252).GetByteCount(p.Name) |> uint32)
         writer.Write(pbs)
         writer.Write(Type.id p.Value.Type)
         match p.Value.Type with
@@ -129,7 +129,7 @@ module Segment =
           | Type.String ->
             let value = p.Value.Raw :?> string
             writer.Write(uint32 value.Length)
-            writer.Write(value |> Encoding.UTF8.GetBytes))
+            writer.Write(value |> Encoding.GetEncoding(1252).GetBytes))
           o.Properties
     ) segment.Objects
 
