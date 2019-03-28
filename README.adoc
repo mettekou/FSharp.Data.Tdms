@@ -32,7 +32,7 @@ Alternatively, use the functions in the `FSharp.Data.Tdms` namespace, mainly tho
 ----
 open FSharp.Data.Tdms
 
-File.read "Experiment.tdms" |>
+File.read "Experiment.tdms" true |>
     File.tryRawData<float> "Group1" "Channel1" |>
     Option.defaultValue [||] |>
     Array.iter (printfn "%f")
@@ -51,7 +51,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        File.Read("Experiment.tdms").TryGetRawData("Group1", "Channel1", out double[] data);
+        File.Read("Experiment.tdms", true).TryGetRawData("Group1", "Channel1", out double[] data);
 
         foreach (double sample in data)
         {
