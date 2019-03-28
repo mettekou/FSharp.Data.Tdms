@@ -10,18 +10,18 @@ module SegmentedIndex =
   open System.IO
   open FSharp.Collections
 
-  let readSegments (reader : BinaryReader) =
+  let readSegments fromIndex (reader : BinaryReader) =
     List.unfold (fun s ->
       if reader.BaseStream.Position = reader.BaseStream.Length
       then None
       else
-        let s' = Segment.read s reader
+        let s' = Segment.read fromIndex s reader
         Some (s', Some s')
     ) None
     
-  let read (path : string) =
+  let read fromIndex (path : string) =
     use reader = new BinaryReader(File.OpenRead(path))
-    { Path = path; Segments = readSegments reader }
+    { Path = path; Segments = readSegments fromIndex reader }
 
   let write index =
     use writer = new BinaryWriter(File.OpenWrite(index.Path + "_index"))

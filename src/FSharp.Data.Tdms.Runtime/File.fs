@@ -6,15 +6,18 @@ type File = {
     Index : Index
 }
 
-module File =  
+module File =
+
+    open System.IO
 
     /// <summary>
     /// Opens a TDMS file, reads the index from it, and closes it.
     /// </summary>
     /// <param name="path"> The path to the TDMS file to read.</param>
-    let read path =
-        let si = SegmentedIndex.read path
-        //SegmentedIndex.write si
+    let read path writeIndex =
+        let indexPath = Path.ChangeExtension(path, ".tdms_index")
+        let si = if File.Exists(indexPath) then SegmentedIndex.read true indexPath else SegmentedIndex.read false path
+        if writeIndex then SegmentedIndex.write si
         { Index = SegmentedIndex.amalgamate si }
     
     /// <summary>
@@ -41,7 +44,8 @@ type File with
     /// Opens a TDMS file, reads the index from it, and closes it.
     /// </summary>
     /// <param name="path"> The path to the TDMS file to read.</param>
-    static member Read path = File.read path
+    /// <param name="writeIndex"> Whether to write the TDMS index file.</param>
+    static member Read (path, writeIndex) = File.read path writeIndex
 
     /// <summary>
     /// Gets the groups in a TDMS file.

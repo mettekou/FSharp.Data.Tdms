@@ -24,7 +24,7 @@ type TdmsProvider (config : TypeProviderConfig) as this =
     let staticParameters = [ProvidedStaticParameter("Sample", typeof<string>)]
   
     let generatedType typeName path =
-      let {Index = index} = File.read path
+      let {Index = index} = File.read path true
       let asm = ProvidedAssembly()
       let root = ProvidedTypeDefinition(asm, ns, typeName, Some typeof<obj>, isErased = false, hideObjectMethods = true)
       let indexField = ProvidedField("_index", typeof<Index>)

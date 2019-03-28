@@ -168,7 +168,7 @@ module Segment =
     let chunkSize = chunkDataSize indices
     if chunkSize = 0uL then 0uL else totalDataSize / chunkSize*)
 
-  let read previousSegment (reader : BinaryReader) =
+  let read fromIndex previousSegment (reader : BinaryReader) =
     let offset = uint64 reader.BaseStream.Position
     let leadIn, mappings = readLeadIn reader
     let metaDataStart = reader.BaseStream.Position
@@ -181,7 +181,7 @@ module Segment =
         else merge (Option.fold (fun _ s -> s.Objects) [] previousSegment) os
       else
         Option.map (fun s -> s.Objects) previousSegment |> Option.defaultValue []
-    reader.BaseStream.Seek(metaDataStart + int64 leadIn.NextSegmentOffset, SeekOrigin.Begin) |> ignore
+    if not fromIndex then reader.BaseStream.Seek(metaDataStart + int64 leadIn.NextSegmentOffset, SeekOrigin.Begin) |> ignore
     { Offset = offset; LeadIn = leadIn; Objects = objects }
   
   let rawDataIndexFor previousObjects object =
