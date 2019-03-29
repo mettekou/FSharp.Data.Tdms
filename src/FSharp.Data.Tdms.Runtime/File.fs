@@ -16,8 +16,9 @@ module File =
     /// <param name="path"> The path to the TDMS file to read.</param>
     let read path writeIndex =
         let indexPath = Path.ChangeExtension(path, ".tdms_index")
-        let si = if File.Exists(indexPath) then SegmentedIndex.read true indexPath else SegmentedIndex.read false path
-        if writeIndex then SegmentedIndex.write si
+        let indexExists = File.Exists(indexPath)
+        let si = SegmentedIndex.read indexExists (if indexExists then indexPath else path)
+        if not indexExists && writeIndex then SegmentedIndex.write si
         { Index = SegmentedIndex.amalgamate si }
     
     /// <summary>

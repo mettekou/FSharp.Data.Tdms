@@ -24,7 +24,7 @@ module SegmentedIndex =
     { Path = path; Segments = readSegments fromIndex reader }
 
   let write index =
-    use writer = new BinaryWriter(File.OpenWrite(index.Path + "_index"))
+    use writer = new BinaryWriter(File.OpenWrite(Path.ChangeExtension(index.Path, ".tdms_index")))
     List.iter (Segment.writeIndex writer) index.Segments
   
   let amalgamate { Path = path; Segments = segments } =
