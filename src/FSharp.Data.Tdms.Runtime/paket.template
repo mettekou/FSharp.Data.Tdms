@@ -1,6 +1,6 @@
 type file
 id FSharp.Data.Tdms
-version 0.5.0
+version 0.5.1
 authors
     Dylan Meysmans
 owners
@@ -31,9 +31,6 @@ references
     FSharp.Data.Tdms.Runtime.dll
 dependencies
   FSharp.Core >= LOCKEDVERSION
-
-# put any package references here
-#  Some.Package
   framework: netcoreapp2.0
     System.Text.Encoding.CodePages >= LOCKEDVERSION
   framework: netstandard2.0
