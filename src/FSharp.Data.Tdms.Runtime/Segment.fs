@@ -169,7 +169,7 @@ module Segment =
     if chunkSize = 0uL then 0uL else totalDataSize / chunkSize*)
 
   let read fromIndex previousSegment (reader : BinaryReader) =
-    let offset = uint64 reader.BaseStream.Position
+    let offset = if fromIndex then Option.map (fun s -> s.Offset + 28uL + s.LeadIn.NextSegmentOffset) previousSegment |> Option.defaultValue 0uL else uint64 reader.BaseStream.Position
     let leadIn, mappings = readLeadIn reader
     let metaDataStart = reader.BaseStream.Position
     let objects =
