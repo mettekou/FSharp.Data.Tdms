@@ -33,6 +33,6 @@ module SegmentedIndex =
          | [] -> None
          | next :: todo' ->
              let index = Segment.index previousObjects next
-             Some (index, (todo', List.fold (fun m o -> match o.RawDataIndex with | None -> m | Some _ -> Map.add o.Name o m) previousObjects next.Objects))) (segments, Map.empty)
+             Some (index, (todo', List.fold (fun m o -> match o.RawDataIndex with | None | Some AsBefore -> m | Some _ -> Map.add o.Name o m) previousObjects next.Objects))) (segments, Map.empty)
     |> List.fold Index.merge { Path = path; Properties = Map.empty; Groups = Map.empty }
     
