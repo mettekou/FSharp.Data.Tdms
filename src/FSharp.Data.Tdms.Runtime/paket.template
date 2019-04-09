@@ -1,6 +1,6 @@
 type file
 id FSharp.Data.Tdms
-version 0.5.1
+version 0.5.2
 authors
     Dylan Meysmans
 owners
