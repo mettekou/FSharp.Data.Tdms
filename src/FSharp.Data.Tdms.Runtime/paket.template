@@ -1,6 +1,6 @@
 type file
 id FSharp.Data.Tdms
-version 0.5.3
+version 0.5.4
 authors
     Dylan Meysmans
 owners
@@ -12,7 +12,7 @@ copyright
 licenseUrl
     https://github.com/mettekou/FSharp.Data.Tdms/blob/master/LICENSE
 requireLicenseAcceptance
-    false
+    true
 tags
     F# fsharp typeproviders tdms
 summary
