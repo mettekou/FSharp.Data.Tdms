@@ -21,14 +21,14 @@ type TdmsProvider (config : TypeProviderConfig) as this =
 
     // check we contain a copy of runtime files, and are not referencing the runtime DLL
     //do assert (typeof<FSharp.Data.DataSource>.Assembly.GetName().Name = execAsm.GetName().Name)  
-    let staticParameters = [ProvidedStaticParameter("Sample", typeof<string>)]
+    let staticParameters = [ProvidedStaticParameter("Sample", typeof<string>); ProvidedStaticParameter("WriteIndex", typeof<bool>)]
   
-    let generatedType typeName path =
-      let {Index = index} = File.read path true
+    let generatedType typeName path writeIndex =
+      let {Index = index} = File.read path writeIndex
       let asm = ProvidedAssembly()
       let root = ProvidedTypeDefinition(asm, ns, typeName, Some typeof<obj>, isErased = false, hideObjectMethods = true)
       let indexField = ProvidedField("_index", typeof<Index>)
-      let constructor = ProvidedConstructor([ProvidedParameter("path", typeof<string>)], invokeCode = fun args -> Expr.FieldSet(args.[0], indexField, <@@ File.read (%%args.[1] : string) @@>))
+      let constructor = ProvidedConstructor([ProvidedParameter("path", typeof<string>); ProvidedParameter("writeIndex", typeof<bool>)], invokeCode = fun args -> Expr.FieldSet(args.[0], indexField, <@@ File.read (%%args.[1] : string) (%%args.[2] : bool) @@>))
       indexField.SetFieldAttributes(FieldAttributes.Private)
       root.AddMember(indexField)
       root.AddMember(constructor)
@@ -65,7 +65,7 @@ type TdmsProvider (config : TypeProviderConfig) as this =
   
     let providerType =
       let tdmsProvider = ProvidedTypeDefinition(execAsm, ns, "TdmsProvider", baseType = Some typeof<obj>, isErased = false)
-      tdmsProvider.DefineStaticParameters(staticParameters, fun typeName args -> generatedType typeName (args.[0] :?> string))
+      tdmsProvider.DefineStaticParameters(staticParameters, fun typeName args -> generatedType typeName (args.[0] :?> string) (args.[1] :?> bool))
       tdmsProvider
       
     do
