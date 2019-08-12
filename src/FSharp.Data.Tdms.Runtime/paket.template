@@ -1,6 +1,6 @@
 type file
 id FSharp.Data.Tdms
-version 0.5.2
+version 0.5.3
 authors
     Dylan Meysmans
 owners
@@ -16,9 +16,9 @@ requireLicenseAcceptance
 tags
     F# fsharp typeproviders tdms
 summary
-    TDMS support for F#
+    TDMS support for F# and C#
 description
-    TDMS support for F#
+    TDMS support for F# and C#
 tags
     F# fsharp typeproviders tdms
 files
