@@ -17,6 +17,7 @@ module Helpers =
     
     static member RawData<'T> (group, channel, index) =
       File.tryRawData<'T> group channel index
+      |> Option.defaultValue [||]
       
   let rawData ty group channel index =
     let generic = typeof<RawDataHelper>.GetMethod "RawData"
