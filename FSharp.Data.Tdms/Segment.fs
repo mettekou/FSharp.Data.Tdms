@@ -89,9 +89,7 @@ module Segment =
   let tdsm = [| 0x54uy; 0x44uy; 0x53uy; 0x6Duy |]
 
   let writeIndex (writer : BinaryWriter) segment =
-    #if NETCORE2_0 || NETSTANDARD2_0
     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
-    #endif
     writer.Write(tdsh)
     writer.Write(uint32 segment.LeadIn.TableOfContents)
     writer.Write(uint32 segment.LeadIn.Version)
