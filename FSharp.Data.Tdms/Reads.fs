@@ -56,9 +56,7 @@ module Reads =
   let readType (reader : BinaryReader) = readUInt32 reader |> Type.ofId |> Option.defaultValue Type.Void
 
   let readString (reader : BinaryReader) =
-    #if NETCORE2_0 || NETSTANDARD2_0
     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
-    #endif
     readUInt32 reader |> int |> reader.ReadBytes |> Encoding.GetEncoding(1252).GetString
 
   let readTimestamp (reader : BinaryReader) =
