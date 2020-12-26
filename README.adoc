@@ -1,4 +1,4 @@
-= F# TDMS Support image:https://ci.appveyor.com/api/projects/status/neahoo6surfs4bo6?svg=true[link=https://ci.appveyor.com/project/mettekou/fsharp-data-tdms] image:https://buildstats.info/nuget/FSharp.Data.Tdms[link=https://www.nuget.org/packages/FSharp.Data.Tdms]
+= F# TDMS Support image:https://buildstats.info/nuget/FSharp.Data.Tdms[link=https://www.nuget.org/packages/FSharp.Data.Tdms]
 
 `FSharp.Data.Tdms` provides support for TDMS files[[the-ni-tdms-file-format]]<<#the-ni-tdms-file-format-entry,^[1]^>>. It allows a user to access these in a type-safe manner through a generative type provider, but also through plain old functions.
 
