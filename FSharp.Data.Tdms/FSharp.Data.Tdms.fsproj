@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="ProvidedTypes.fsi" />
+      <Compile Include="ProvidedTypes.fs" />
+      <Compile Include="Map.fs" />
+      <Compile Include="Type.fs" />
+      <Compile Include="Value.fs" />
+      <Compile Include="Reads.fs" />
+      <Compile Include="Channel.fs" />
+      <Compile Include="Group.fs" />
+      <Compile Include="Index.fs" />
+      <Compile Include="Property.fs" />
+      <Compile Include="Segment.fs" />
+      <Compile Include="SegmentedIndex.fs" />
+      <Compile Include="File.fs" />
+      <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
+      <Compile Include="FSharp.Data.Tdms.DesignTime.fs" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Update="FSharp.Core" Version="5.0.0" />
+        <PackageReference Include="MinVer" Version="2.4.0">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+</Project>
