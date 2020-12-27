@@ -27,6 +27,9 @@ module File =
     let tryRawData<'T> group channel { Index = index } =
         Index.tryRawData<'T> group channel index
 
+    let tryRawDataAsync<'t> group channel { Index = index } =
+        Index.tryRawDataAsync<'t> group channel index
+
     /// <summary>
     /// Gets the value of a property associated with the file.
     /// </summary>

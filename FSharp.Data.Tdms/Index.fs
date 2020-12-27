@@ -1,5 +1,7 @@
 namespace FSharp.Data.Tdms
 
+open System.Threading.Tasks
+
 type Index = {
   Path : string
   Properties : Map<string, Value>
@@ -26,6 +28,12 @@ module Index =
   let tryRawData<'T> groupName channelName index =
     use reader = new BinaryReader(File.OpenRead(Path.ChangeExtension(index.Path, ".tdms")))
     Map.tryFind groupName index.Groups |> Option.bind (fun g -> Map.tryFind channelName g.Channels) |> Option.bind (Channel.rawData<'T> reader)
+
+  let tryRawDataAsync<'t> groupName channelName { Path = path; Groups = groups } =
+    Map.tryFind groupName groups
+    |> Option.bind (fun g -> Map.tryFind channelName g.Channels)
+    |> Option.map (Channel.tryRawDataAsync<'t> (Path.ChangeExtension(path, ".tdms")))
+    |> Option.defaultValue (Task.FromResult None)
 
   let tryGroup groupName { Groups = groups } = Map.tryFind groupName groups
 
