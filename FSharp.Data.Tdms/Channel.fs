@@ -32,60 +32,70 @@ module Channel =
       else None
     
   let tryRawDataAsync<'t> path { Type = ty; RawDataBlocks = rawDataBlocks } =
-    use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
     if ty <> typeof<'t> then Task.FromResult None
     else if ty = typeof<bool> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<bool> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       } 
     else if ty = typeof<sbyte> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<sbyte> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       }
     else if ty = typeof<int16> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<int16> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       }
     else if ty = typeof<int> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<int> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       }
     else if ty = typeof<int64> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<int64> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       }
     else if ty = typeof<byte> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<byte> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       }
     else if ty = typeof<uint16> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<uint16> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       }
     else if ty = typeof<uint> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<uint> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       }
     else if ty = typeof<uint64> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<uint64> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       }
     else if ty = typeof<float32> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<float32> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       } 
     else if ty = typeof<float> then
       task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<float> fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       } 
