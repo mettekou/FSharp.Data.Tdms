@@ -122,6 +122,20 @@ module Reader =
         then box memory :?> Memory<'tto>
         else (new CastMemoryManager<'tfrom, 'tto>(memory)).Memory
 
+    let readPrimitiveRawData<'t when 't : struct and 't : (new : unit -> 't) and 't :> ValueType> (stream: Stream) (segments: (uint64 * uint64) seq) bigEndian =
+        let mutable position = 0
+        let size = sizeof<'t>
+        let data = Seq.sumBy snd segments |> int |> Array.zeroCreate<'t>
+        let span = MemoryMarshal.Cast<'t, byte>(data.AsSpan())
+        for (start, length) in segments do
+            stream.Seek(int64 start, SeekOrigin.Begin) |> ignore
+            stream.Read(span.Slice(position * size, int length * size)) |> ignore
+            position <- position + int length
+        if bigEndian && size > 1 then 
+            span.Reverse()
+            Array.Reverse data
+        data
+
     let readPrimitiveRawDataAsync<'t when 't : struct and 't : (new : unit -> 't) and 't :> ValueType> (stream: Stream) (segments: (uint64 * uint64) seq) bigEndian =
         let mutable position = 0
         let size = sizeof<'t>

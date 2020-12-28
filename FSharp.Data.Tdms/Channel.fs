@@ -23,13 +23,39 @@ module Channel =
   let unsafePropertyValue name channel =
     Map.tryFind name channel.Properties |> Option.get |> (fun v -> v.Raw)
   
-  let rawData<'T> (reader : BinaryReader) channel =
-    if typeof<'T>.IsAssignableFrom(channel.Type) then
-          Some [| for (p, l) in channel.RawDataBlocks do
-                    reader.BaseStream.Seek(int64 p, SeekOrigin.Begin) |> ignore
+  let tryRawData<'t> path { Type = ty; RawDataBlocks = rawDataBlocks; Read = read } =
+    if typeof<'t>.IsAssignableFrom ty then
+      use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, false)
+      if ty = typeof<bool> then
+        Reader.readPrimitiveRawData<bool> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<sbyte> then
+        Reader.readPrimitiveRawData<sbyte> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<int16> then
+        Reader.readPrimitiveRawData<int16> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<int> then
+        Reader.readPrimitiveRawData<int> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<int64> then
+        Reader.readPrimitiveRawData<int64> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<byte> then
+        Reader.readPrimitiveRawData<byte> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<uint16> then
+        Reader.readPrimitiveRawData<uint16> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<uint> then
+        Reader.readPrimitiveRawData<uint> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<uint64> then
+        Reader.readPrimitiveRawData<uint64> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<float32> then
+        Reader.readPrimitiveRawData<float32> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<float> then
+        Reader.readPrimitiveRawData<float> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else
+        use reader = new BinaryReader(fileStream)
+        Some [| for (p, l) in rawDataBlocks do
+                    fileStream.Seek(int64 p, SeekOrigin.Begin) |> ignore
                     for _ in 1uL..l ->
-                      channel.Read reader :?> 'T |]
-      else None
+                      read reader :?> 't |]
+    else
+      None
     
   let tryRawDataAsync<'t> path { Type = ty; RawDataBlocks = rawDataBlocks } =
     if ty <> typeof<'t> then Task.FromResult None
