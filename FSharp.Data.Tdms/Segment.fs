@@ -274,7 +274,7 @@ module Segment =
         let group = Map.tryFind groupName gs |> Option.defaultValue { Properties = Map.empty; Channels = Map.empty }
         let i = rawDataIndexFor previousObjects (Some object)
         let ty = indexToType previousObjects object |> Option.defaultValue Type.Void
-        let channel = { Read = typeToRead ty (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)); Type = Type.system ty |> Option.defaultValue typeof<unit>; Properties = ps; RawDataBlocks = rawDataFor previousObjects n segment }
+        let channel = { BigEndian = segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData); Read = typeToRead ty (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)); Type = Type.system ty |> Option.defaultValue typeof<unit>; Properties = ps; RawDataBlocks = rawDataFor previousObjects n segment }
         { index with Groups = Map.add groupName { group with Channels = Map.add channelName channel group.Channels } index.Groups }
             
   let index previousObjects ({ LeadIn = l; Objects = os } as segment) =
