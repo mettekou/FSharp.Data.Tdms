@@ -2,6 +2,7 @@ namespace FSharp.Data.Tdms
 
 open System
 open System.IO
+open System.Numerics
 open System.Threading.Tasks
 open FSharp.Control.Tasks.NonAffine
 
@@ -48,6 +49,8 @@ module Channel =
         Reader.readPrimitiveRawData<float32> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
       else if ty = typeof<float> then
         Reader.readPrimitiveRawData<float> fileStream rawDataBlocks false |> box |> tryUnbox<'t []>
+      else if ty = typeof<Complex> then
+        Reader.readComplexRawData fileStream rawDataBlocks true |> box |> tryUnbox<'t []>
       else
         use reader = new BinaryReader(fileStream)
         Some [| for (p, l) in rawDataBlocks do
@@ -123,6 +126,12 @@ module Channel =
       task {
         use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
         let! result = Reader.readPrimitiveRawDataAsync<float> fileStream rawDataBlocks false
+        return box result |> tryUnbox<'t []>
+      } 
+    else if ty = typeof<Complex> then
+      task {
+        use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
+        let! result = Reader.readComplexRawDataAsync fileStream rawDataBlocks false
         return box result |> tryUnbox<'t []>
       } 
     else Task.FromResult None
