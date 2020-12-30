@@ -13,7 +13,6 @@
     <Compile Include="Map.fs" />
     <Compile Include="Type.fs" />
     <Compile Include="Value.fs" />
-    <Compile Include="Reads.fs" />
     <Compile Include="Reader.fs" />
     <Compile Include="Channel.fs" />
     <Compile Include="Group.fs" />

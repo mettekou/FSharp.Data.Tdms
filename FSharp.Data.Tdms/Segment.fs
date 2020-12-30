@@ -1,7 +1,16 @@
 namespace FSharp.Data.Tdms
 
 open System
+open System.Buffers
+open System.Buffers.Binary
+open System.IO
+open System.Numerics
+open System.Runtime.InteropServices
 open System.Text
+
+type Tag =
+  | Tdsm = 1834173524u
+  | Tdsh = 1750287444u
 
 [<Flags>]
 type TableOfContents =
@@ -16,12 +25,13 @@ type Version =
   | ``1.0`` = 4712u
   | ``2.0`` = 4713u
 
-type LeadIn = {
-  TableOfContents : TableOfContents
-  Version : Version
-  NextSegmentOffset : uint64
-  RawDataOffset : uint64
- }
+[<Struct>]
+type LeadIn =
+  { Tag: Tag
+    TableOfContents : TableOfContents
+    Version : Version
+    NextSegmentOffset : uint64
+    RawDataOffset : uint64 }
 
 type RawDataIndex =
   | AsBefore
@@ -31,7 +41,7 @@ type RawDataIndex =
 type Object = {
   Name : string
   RawDataIndex : RawDataIndex option
-  Properties : Property list
+  Properties : Property []
  }
 
 type Segment = {
@@ -42,111 +52,119 @@ type Segment = {
 
 module Segment =
 
-  open System.IO
-  open System.Numerics
+  let readInt16 (buffer: byte ReadOnlySpan byref) bigEndian =
+    let value = if bigEndian then BinaryPrimitives.ReadInt16BigEndian buffer else BinaryPrimitives.ReadInt16LittleEndian buffer
+    buffer <- buffer.Slice 2
+    value
 
-  let readTdsm (reader : BinaryReader) =
-    reader.ReadBytes 4 |> ignore
+  let readInt (buffer: byte ReadOnlySpan byref) bigEndian =
+    let value = if bigEndian then BinaryPrimitives.ReadInt32BigEndian buffer else BinaryPrimitives.ReadInt32LittleEndian buffer
+    buffer <- buffer.Slice 4
+    value
 
-  let readTableOfContents reader : TableOfContents =
-    Reads.readUInt32 reader |> LanguagePrimitives.EnumOfValue
+  let readInt64 (buffer: byte ReadOnlySpan byref) bigEndian =
+    let value = if bigEndian then BinaryPrimitives.ReadInt64BigEndian buffer else BinaryPrimitives.ReadInt64LittleEndian buffer
+    buffer <- buffer.Slice 8
+    value
 
-  let readVersion reader mappings =
-    mappings.UInt32 reader |> LanguagePrimitives.EnumOfValue
+  let readUInt16 (buffer: byte ReadOnlySpan byref) bigEndian =
+    let value = if bigEndian then BinaryPrimitives.ReadUInt16BigEndian buffer else BinaryPrimitives.ReadUInt16LittleEndian buffer
+    buffer <- buffer.Slice 2
+    value
 
-  let readLeadIn reader =
-    readTdsm reader
-    let tableOfContents = readTableOfContents reader
-    let mappings = if tableOfContents.HasFlag TableOfContents.ContainsBigEndianData then Reads.bigEndianMappings else Reads.littleEndianMappings
-    { TableOfContents = tableOfContents; Version = readVersion reader mappings; NextSegmentOffset = mappings.UInt64 reader; RawDataOffset = mappings.UInt64 reader }, mappings
+  let readUInt (buffer: byte ReadOnlySpan byref) bigEndian =
+    let value = if bigEndian then BinaryPrimitives.ReadUInt32BigEndian buffer else BinaryPrimitives.ReadUInt32LittleEndian buffer
+    buffer <- buffer.Slice 4
+    value
 
-  let readRawDataIndex name previous reader mappings =
-    match mappings.UInt32 reader with
+  let readUInt64 (buffer: byte ReadOnlySpan byref) bigEndian =
+    let value = if bigEndian then BinaryPrimitives.ReadUInt64BigEndian buffer else BinaryPrimitives.ReadUInt64LittleEndian buffer
+    buffer <- buffer.Slice 8
+    value
+  
+  let readFloat32 (buffer: byte ReadOnlySpan byref) bigEndian =
+    let value = if bigEndian then BinaryPrimitives.ReadSingleBigEndian buffer else BinaryPrimitives.ReadSingleLittleEndian buffer
+    buffer <- buffer.Slice 4
+    value
+
+  let readFloat (buffer: byte ReadOnlySpan byref) bigEndian =
+    let value = if bigEndian then BinaryPrimitives.ReadDoubleBigEndian buffer else BinaryPrimitives.ReadDoubleLittleEndian buffer
+    buffer <- buffer.Slice 8
+    value
+
+  let readType (buffer: byte ReadOnlySpan byref) bigEndian =
+    readUInt &buffer bigEndian |> LanguagePrimitives.EnumOfValue<uint32, FSharp.Data.Tdms.Type>
+
+  let readString (buffer: byte ReadOnlySpan byref) bigEndian =
+    let length = readUInt &buffer bigEndian |> int
+    let bytes = buffer.Slice(0, length)
+    buffer <- buffer.Slice length
+    Encoding.GetEncoding(1252).GetString bytes
+
+  let readLeadIn (buffer: byte ReadOnlySpan byref) =
+    { Tag = readUInt &buffer false |> LanguagePrimitives.EnumOfValue<uint32, Tag>
+      TableOfContents = readUInt &buffer false |> LanguagePrimitives.EnumOfValue<uint32, TableOfContents>
+      Version = readUInt &buffer false |> LanguagePrimitives.EnumOfValue<uint32, Version>
+      NextSegmentOffset = readUInt64 &buffer false
+      RawDataOffset = readUInt64 &buffer false }
+
+  let readPropertyValue (buffer: byte ReadOnlySpan byref) bigEndian =
+    function
+    | Type.Void ->
+      buffer <- buffer.Slice 1
+      box ()
+    | Type.Boolean ->
+      let value = box (buffer.[0] <> 0uy)
+      buffer <- buffer.Slice 1
+      value
+    | Type.I8 -> 
+      let value = box (MemoryMarshal.Cast<byte, sbyte> buffer).[0]
+      buffer <- buffer.Slice 1
+      value
+    | Type.I16 -> readInt16 &buffer bigEndian |> box
+    | Type.I32 -> readInt &buffer bigEndian |> box
+    | Type.I64 -> readInt64 &buffer bigEndian |> box
+    | Type.U8 -> 
+      let value = box buffer.[0]
+      buffer <- buffer.Slice 1
+      value
+    | Type.U16 -> readUInt16 &buffer bigEndian |> box
+    | Type.U32 -> readUInt &buffer bigEndian |> box
+    | Type.U64 -> readUInt64 &buffer bigEndian |> box
+    | Type.SingleFloat | Type.SingleFloatWithUnit -> readFloat32 &buffer bigEndian |> box
+    | Type.DoubleFloat | Type.DoubleFloatWithUnit -> readFloat &buffer bigEndian |> box
+    | Type.ComplexSingleFloat -> Complex(readFloat32 &buffer bigEndian |> float, readFloat32 &buffer bigEndian |> float) |> box
+    | Type.ComplexDoubleFloat -> Complex(readFloat &buffer bigEndian, readFloat &buffer bigEndian) |> box
+    | Type.Timestamp ->
+      DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+        .AddSeconds(float (readUInt64 &buffer bigEndian) / float(UInt64.MaxValue))
+        .AddSeconds(float (readInt64 &buffer bigEndian))
+        .ToLocalTime()
+        |> box
+    | Type.String -> readString &buffer bigEndian |> box
+
+  let readRawDataIndex name previous (buffer: byte ReadOnlySpan byref) bigEndian =
+    match readUInt &buffer bigEndian with
       | 0u -> Some AsBefore
-      | 20u -> OtherType(mappings.Type reader, mappings.UInt32 reader, mappings.UInt64 reader) |> Some
-      | 28u -> String(mappings.Type reader, mappings.UInt32 reader, mappings.UInt64 reader, mappings.UInt64 reader) |> Some
+      | 20u -> OtherType(readType &buffer bigEndian, readUInt &buffer bigEndian, readUInt64 &buffer bigEndian) |> Some
+      | 28u -> String(readType &buffer bigEndian, readUInt &buffer bigEndian, readUInt64 &buffer bigEndian, readUInt64 &buffer bigEndian) |> Some
       | _ -> None
 
-  let readMetaData previousSegment reader mappings =
-    let objectCount = mappings.UInt32 reader |> int
-    [
-      for i in 1..objectCount do
-        let name = mappings.String reader
-        let rawDataIndex = readRawDataIndex name previousSegment reader mappings
-        let propertyCount = mappings.UInt32 reader |> int
-        let properties = [
-          for j in 1..propertyCount do
-            let propertyName = mappings.String reader
-            let propertyType = mappings.Type reader
-            let propertyValue = mappings.PropertyValue propertyType reader
-            yield { Name = propertyName; Value = { Type = propertyType; Raw = propertyValue } }
-        ]
-        yield { Name = name; RawDataIndex = rawDataIndex; Properties = properties }
-    ]
-
-  let tdsh = [| 0x54uy; 0x44uy; 0x53uy; 0x68uy |]
-
-  let tdsm = [| 0x54uy; 0x44uy; 0x53uy; 0x6Duy |]
-
-  let writeIndex (writer : BinaryWriter) segment =
-    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
-    writer.Write(tdsh)
-    writer.Write(uint32 segment.LeadIn.TableOfContents)
-    writer.Write(uint32 segment.LeadIn.Version)
-    writer.Write(segment.LeadIn.NextSegmentOffset)
-    writer.Write(segment.LeadIn.RawDataOffset)
-    writer.Write(uint32 segment.Objects.Length)
-    List.iter (fun o ->
-      let obs = Encoding.GetEncoding(1252).GetBytes(o.Name)
-      writer.Write(Encoding.GetEncoding(1252).GetByteCount(o.Name) |> uint32)
-      writer.Write(obs)
-      match o.RawDataIndex with
-        | None -> writer.Write(0xFFFFFFFFu)
-        | Some AsBefore -> writer.Write(0x00000000u)
-        | Some (OtherType (ty, m, n)) ->
-          writer.Write(20u)
-          writer.Write(Type.id ty)
-          writer.Write(m)
-          writer.Write(n)
-        | Some (String (ty, m, n, o)) ->
-          writer.Write(28u)
-          writer.Write(Type.id ty)
-          writer.Write(m)
-          writer.Write(n)
-          writer.Write(o)
-      writer.Write(List.length o.Properties |> uint32)
-      List.iter (fun (p : Property) ->
-        let pbs = Encoding.GetEncoding(1252).GetBytes(p.Name)
-        writer.Write(Encoding.GetEncoding(1252).GetByteCount(p.Name) |> uint32)
-        writer.Write(pbs)
-        writer.Write(Type.id p.Value.Type)
-        match p.Value.Type with
-          | Type.Void -> writer.Write(0uy)
-          | Type.Boolean -> writer.Write(p.Value.Raw :?> bool)
-          | Type.I8 -> writer.Write(p.Value.Raw :?> int8)
-          | Type.U8 -> writer.Write(p.Value.Raw :?> uint8)
-          | Type.I16 -> writer.Write(p.Value.Raw :?> int16)
-          | Type.U16 -> writer.Write(p.Value.Raw :?> uint16)
-          | Type.I32 -> writer.Write(p.Value.Raw :?> int32)
-          | Type.U32 -> writer.Write(p.Value.Raw :?> uint32)
-          | Type.I64 -> writer.Write(p.Value.Raw :?> int64)
-          | Type.U64 -> writer.Write(p.Value.Raw :?> uint64)
-          | Type.SingleFloat -> writer.Write(p.Value.Raw :?> float32)
-          | Type.DoubleFloat -> writer.Write(p.Value.Raw :?> float)
-          | Type.ComplexDoubleFloat -> 
-            let complex = p.Value.Raw :?> Complex
-            writer.Write(complex.Real)
-            writer.Write(complex.Imaginary)
-          | Type.String ->
-            let value = p.Value.Raw :?> string
-            writer.Write(uint32 value.Length)
-            writer.Write(value |> Encoding.GetEncoding(1252).GetBytes)
-          | Type.Timestamp -> 
-              let t = (p.Value.Raw :?> DateTime).ToUniversalTime() - new DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-              writer.Write(uint64 ((t.TotalSeconds % 1.) * float UInt64.MaxValue))
-              writer.Write(int64 t.TotalSeconds))
-          o.Properties
-    ) segment.Objects
+  let readMetaData previousSegment (buffer: byte ReadOnlySpan byref) bigEndian =
+    let objectCount = readInt &buffer bigEndian
+    let objects = Array.zeroCreate<Object> objectCount
+    for i = 0 to objectCount - 1 do
+        let name = readString &buffer bigEndian
+        let rawDataIndex = readRawDataIndex name previousSegment &buffer bigEndian
+        let propertyCount = readUInt &buffer bigEndian |> int
+        let properties = Array.zeroCreate<Property> propertyCount
+        for j = 0 to propertyCount - 1 do
+            let propertyName = readString &buffer bigEndian
+            let propertyType = readType &buffer bigEndian
+            let propertyValue = readPropertyValue &buffer bigEndian propertyType
+            properties.[j] <- { Name = propertyName; Value = { Type = propertyType; Raw = propertyValue } }
+        objects.[i] <- { Name = name; RawDataIndex = rawDataIndex; Properties = properties }
+    objects |> Array.toList
 
   let merge previousObjects objects =
     let _, newObjects = List.partition (fun o -> List.tryFind (fun o' -> o'.Name = o.Name) previousObjects |> Option.isNone) objects
@@ -166,20 +184,34 @@ module Segment =
     let chunkSize = chunkDataSize indices
     if chunkSize = 0uL then 0uL else totalDataSize / chunkSize*)
 
-  let read fromIndex previousSegment (reader : BinaryReader) =
-    let offset = if fromIndex then Option.map (fun s -> s.Offset + 28uL + s.LeadIn.NextSegmentOffset) previousSegment |> Option.defaultValue 0uL else uint64 reader.BaseStream.Position
-    let leadIn, mappings = readLeadIn reader
-    let metaDataStart = reader.BaseStream.Position
+  let read fromIndex previousSegment leadInBuffer (stream : Stream) (indexStream : Stream) =
+    let offset = if fromIndex then Option.map (fun s -> s.Offset + 28uL + s.LeadIn.NextSegmentOffset) previousSegment |> Option.defaultValue 0uL else uint64 stream.Position
+    stream.Read(leadInBuffer, 0, 28) |> ignore
+    let mutable leadInSpan = ReadOnlySpan leadInBuffer
+    let writeIndex = isNull indexStream |> not
+    if writeIndex
+    then
+      indexStream.Write(leadInBuffer, 0, 28)
+    let leadIn = readLeadIn &leadInSpan
+    let metaDataStart = stream.Position
     let objects =
       if leadIn.TableOfContents.HasFlag(TableOfContents.ContainsMetaData)
       then
-        let os = readMetaData previousSegment reader mappings
+        let remainingLength = int leadIn.RawDataOffset
+        let buffer = ArrayPool<byte>.Shared.Rent remainingLength
+        stream.Read(buffer, 0, remainingLength) |> ignore
+        let mutable span = ReadOnlySpan buffer
+        if writeIndex
+        then
+          indexStream.Write(buffer, 0, remainingLength)
+        let os = readMetaData previousSegment &span (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
+        ArrayPool<byte>.Shared.Return(buffer, false)
         if leadIn.TableOfContents.HasFlag(TableOfContents.ContainsNewObjectList)
         then os
         else merge (Option.fold (fun _ s -> s.Objects) [] previousSegment) os
       else
         Option.map (fun s -> s.Objects) previousSegment |> Option.defaultValue []
-    if not fromIndex then reader.BaseStream.Seek(metaDataStart + int64 leadIn.NextSegmentOffset, SeekOrigin.Begin) |> ignore
+    if not fromIndex then stream.Seek(metaDataStart + int64 leadIn.NextSegmentOffset, SeekOrigin.Begin) |> ignore
     { Offset = offset; LeadIn = leadIn; Objects = objects }
   
   let rawDataIndexFor previousObjects object =
@@ -245,27 +277,8 @@ module Segment =
       | Some (OtherType (ty, _, _)) -> Some ty
       | Some (String _) -> Some Type.String
   
-  let typeToRead ``type`` bigEndian =
-    let mappings = if bigEndian then Reads.bigEndianMappings else Reads.littleEndianMappings
-    match ``type`` with
-      | Type.Void -> mappings.Void >> box
-      | Type.Boolean -> mappings.Bool >> box
-      | Type.I8 -> mappings.Int8 >> box
-      | Type.U8 -> mappings.UInt8 >> box
-      | Type.I16 -> mappings.Int16 >> box
-      | Type.U16 -> mappings.UInt16 >> box
-      | Type.I32 -> mappings.Int32 >> box
-      | Type.U32 -> mappings.UInt32 >> box
-      | Type.I64 -> mappings.Int64 >> box
-      | Type.U64 -> mappings.UInt64 >> box
-      | Type.SingleFloat -> mappings.Single >> box
-      | Type.DoubleFloat -> mappings.Double >> box
-      | Type.ComplexDoubleFloat -> mappings.DoubleComplex >> box
-      | Type.String -> mappings.String >> box
-      | Type.Timestamp -> mappings.Timestamp >> box
-  
   let addObject previousObjects segment ({ Properties = ps'; Groups = gs; } as index) ({ Name = n; Properties = ps'' } as object) =
-    let ps = List.map (fun (p : Property) -> p.Name, p.Value) ps'' |> Map.ofList
+    let ps = Array.map (fun (p : Property) -> p.Name, p.Value) ps'' |> Map.ofArray
     match structure n with
       | None -> index
       | Some Root -> { index with Properties = Map.fold (fun ps k v -> Map.add k v ps) ps' ps; Groups = gs }
@@ -274,7 +287,7 @@ module Segment =
         let group = Map.tryFind groupName gs |> Option.defaultValue { Properties = Map.empty; Channels = Map.empty }
         let i = rawDataIndexFor previousObjects (Some object)
         let ty = indexToType previousObjects object |> Option.defaultValue Type.Void
-        let channel = { BigEndian = segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData); Read = typeToRead ty (segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)); Type = Type.system ty |> Option.defaultValue typeof<unit>; Properties = ps; RawDataBlocks = rawDataFor previousObjects n segment }
+        let channel = { BigEndian = segment.LeadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData); Type = Type.system ty |> Option.defaultValue typeof<unit>; Properties = ps; RawDataBlocks = rawDataFor previousObjects n segment }
         { index with Groups = Map.add groupName { group with Channels = Map.add channelName channel group.Channels } index.Groups }
             
   let index previousObjects ({ LeadIn = l; Objects = os } as segment) =

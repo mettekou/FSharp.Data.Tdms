@@ -17,8 +17,7 @@ module File =
     let read path writeIndex =
         let indexPath = Path.ChangeExtension(path, ".tdms_index")
         let indexExists = File.Exists(indexPath)
-        let si = SegmentedIndex.read indexExists (if indexExists then indexPath else path)
-        if not indexExists && writeIndex then SegmentedIndex.write si
+        let si = SegmentedIndex.read indexExists (not indexExists && writeIndex) (if indexExists then indexPath else path) indexPath
         { Index = SegmentedIndex.amalgamate si }
     
     /// <summary>

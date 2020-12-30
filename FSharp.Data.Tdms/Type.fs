@@ -1,84 +1,33 @@
 namespace FSharp.Data.Tdms
 
 type Type =
-  | Void
-  | I8
-  | I16
-  | I32
-  | I64
-  | U8
-  | U16
-  | U32
-  | U64
-  | SingleFloat
-  | DoubleFloat
-  | ExtendedFloat
-  | SingleFloatWithUnit
-  | DoubleFloatWithUnit
-  | ExtendedFloatWithUnit
-  | String
-  | Boolean
-  | Timestamp
-  | FixedPoint
-  | ComplexSingleFloat
-  | ComplexDoubleFloat
-  | DaqMxRawData
+  | Void = 0u
+  | I8 = 1u
+  | I16 = 2u
+  | I32 = 3u
+  | I64 = 4u
+  | U8 = 5u
+  | U16 = 6u
+  | U32 = 7u
+  | U64 = 8u
+  | SingleFloat = 9u
+  | DoubleFloat = 10u
+  | ExtendedFloat = 11u
+  | SingleFloatWithUnit = 0x19u
+  | DoubleFloatWithUnit = 0x1Au
+  | ExtendedFloatWithUnit = 0x1Bu
+  | String = 0x20u
+  | Boolean = 0x21u
+  | Timestamp = 0x44u
+  | FixedPoint = 0x4Fu
+  | ComplexSingleFloat = 0x08000Cu
+  | ComplexDoubleFloat = 0x10000Du
+  | DaqMxRawData = 0xFFFFFFFFu
 
 module Type =
   
   open System
   open System.Numerics
-
-  let id ``type`` =
-    match ``type`` with
-    | Type.Void -> 0u
-    | Type.I8 -> 1u
-    | Type.I16 -> 2u
-    | Type.I32 -> 3u
-    | Type.I64 -> 4u
-    | Type.U8 -> 5u
-    | Type.U16 -> 6u
-    | Type.U32 -> 7u
-    | Type.U64 -> 8u
-    | Type.SingleFloat -> 9u
-    | Type.DoubleFloat -> 10u
-    | Type.ExtendedFloat -> 11u
-    | Type.SingleFloatWithUnit -> 0x19u
-    | Type.DoubleFloatWithUnit -> 0x1Au
-    | Type.ExtendedFloatWithUnit -> 0x1Bu
-    | Type.String -> 0x20u
-    | Type.Boolean -> 0x21u
-    | Type.Timestamp -> 0x44u
-    | Type.FixedPoint -> 0x4Fu
-    | Type.ComplexSingleFloat -> 0x08000Cu
-    | Type.ComplexDoubleFloat -> 0x10000Du
-    | Type.DaqMxRawData -> 0xFFFFFFFFu
-
-  let ofId id =
-      match id with
-        | 0u -> Some Type.Void
-        | 1u -> Some Type.I8
-        | 2u -> Some Type.I16
-        | 3u -> Some Type.I32
-        | 4u -> Some Type.I64
-        | 5u -> Some Type.U8
-        | 6u -> Some Type.U16
-        | 7u -> Some Type.U32
-        | 8u -> Some Type.U64
-        | 9u -> Some Type.SingleFloat
-        | 10u -> Some Type.DoubleFloat
-        | 11u -> Some Type.ExtendedFloat
-        | 0x19u -> Some Type.SingleFloatWithUnit
-        | 0x1Au -> Some Type.DoubleFloatWithUnit
-        | 0x1Bu -> Some Type.ExtendedFloatWithUnit
-        | 0x20u -> Some Type.String
-        | 0x21u -> Some Type.Boolean
-        | 0x44u -> Some Type.Timestamp
-        | 0x4Fu -> Some Type.FixedPoint
-        | 0x08000Cu -> Some Type.ComplexSingleFloat
-        | 0x10000Du -> Some Type.ComplexDoubleFloat
-        | 0xFFFFFFFFu -> Some Type.DaqMxRawData
-        | _ -> None
 
   let size ``type`` =
     match ``type`` with

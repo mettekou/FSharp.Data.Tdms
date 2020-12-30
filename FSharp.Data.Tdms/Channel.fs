@@ -10,14 +10,13 @@ type Channel = {
   Type : Type
   Properties : Map<string, Value>
   BigEndian: bool
-  Read : BinaryReader -> obj
   RawDataBlocks : (uint64 * uint64) list
  }
 
 module Channel =
 
-  let merge { Properties = ps; RawDataBlocks = bs } { Read = r'; Type = ty'; Properties = ps'; BigEndian = bigEndian; RawDataBlocks = bs' } =
-    { Type = ty'; Properties = Map.fold (fun ps k v -> Map.add k v ps) ps' ps; Read = r'; RawDataBlocks = List.append bs bs'; BigEndian = bigEndian }
+  let merge { Properties = ps; RawDataBlocks = bs } { Type = ty'; Properties = ps'; BigEndian = bigEndian; RawDataBlocks = bs' } =
+    { Type = ty'; Properties = Map.fold (fun ps k v -> Map.add k v ps) ps' ps; RawDataBlocks = List.append bs bs'; BigEndian = bigEndian }
   
   let tryPropertyValue<'T> name channel =
     Map.tryFind name channel.Properties |> Option.bind Value.tryGet<'T>
@@ -25,7 +24,7 @@ module Channel =
   let unsafePropertyValue name channel =
     Map.tryFind name channel.Properties |> Option.get |> (fun v -> v.Raw)
   
-  let tryRawData<'t> path { Type = ty; RawDataBlocks = rawDataBlocks; Read = read; BigEndian = bigEndian } =
+  let tryRawData<'t> path { Type = ty; RawDataBlocks = rawDataBlocks; BigEndian = bigEndian } =
     if typeof<'t>.IsAssignableFrom ty then
       use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, false)
       if ty = typeof<bool> then
@@ -53,11 +52,12 @@ module Channel =
       else if ty = typeof<Complex> then
         Reader.readComplexRawData fileStream rawDataBlocks true |> box |> tryUnbox<'t []>
       else
-        use reader = new BinaryReader(fileStream)
+        (*use reader = new BinaryReader(fileStream)
         Some [| for (p, l) in rawDataBlocks do
                     fileStream.Seek(int64 p, SeekOrigin.Begin) |> ignore
                     for _ in 1uL..l ->
-                      read reader :?> 't |]
+                      read reader :?> 't |]*)
+        None
     else
       None
     
