@@ -17,7 +17,7 @@ module Index =
     segmentedIndex
     
   let read fromIndex writeIndex (path : string) (indexPath: string) =
-    use stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 4_096, false)
+    use stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 4_096, if fromIndex then FileOptions.SequentialScan else FileOptions.None)
     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
     let leadInBuffer = ArrayPool<byte>.Shared.Rent 28
     if writeIndex then
