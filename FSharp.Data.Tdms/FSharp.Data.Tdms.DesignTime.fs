@@ -32,7 +32,7 @@ type TdmsProvider (config : TypeProviderConfig) as this =
       fileField.SetFieldAttributes(FieldAttributes.Private)
       root.AddMember(fileField)
       root.AddMember(constructor)
-      for (n, p) in Map.toList file.Index.Properties do
+      (*for (n, p) in Map.toList file.Index.Properties do
         ProvidedProperty(n, Type.system p.Type |> Option.defaultValue typeof<unit>, getterCode = fun args -> <@@ Index.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], fileField)) : File).Index @@>) |> root.AddMember
       for (gn, g) in Map.toList file.Index.Groups do
         let group = ProvidedTypeDefinition(asm, ns, gn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
@@ -60,6 +60,7 @@ type TdmsProvider (config : TypeProviderConfig) as this =
           for (cpn, cp) in Map.toList c.Properties do
             ProvidedProperty(propertyName = cpn, propertyType = (Type.system cp.Type |> Option.defaultValue typeof<unit>), getterCode = fun args -> <@@ Channel.unsafePropertyValue cpn (%%(Expr.FieldGet(args.[0], channelField)) : Channel) @@>) |> channel.AddMember
           ProvidedProperty(propertyName = "Data", propertyType = c.Type.MakeArrayType(), getterCode = let ty = c.Type in fun args -> <@@ rawData ty gn cn (%%(Expr.FieldGet(args.[0], channelPathField)) : File) @@>) |> channel.AddMember
+      *)
       asm.AddTypes([root])
       root
   

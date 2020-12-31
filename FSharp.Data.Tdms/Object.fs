@@ -1,30 +1,38 @@
 namespace FSharp.Data.Tdms
 
 open System
+open System.Collections.Generic
 open System.IO
 open System.Numerics
 open System.Threading.Tasks
 open FSharp.Control.Tasks.NonAffine
 
-type Channel = {
-  Type : Type
-  Properties : Map<string, Value>
+type RawDataIndex =
+  | String of FSharp.Data.Tdms.Type * uint32 * uint64 * uint64
+  | OtherType of FSharp.Data.Tdms.Type * uint32 * uint64
+
+type Object = {
+  Name : string
   BigEndian: bool
-  RawDataBlocks : (uint64 * uint64) list
+  mutable LastRawDataIndex : RawDataIndex option
+  RawDataBlocks : (uint64 * uint64) List
+  Properties : Property List
  }
 
-module Channel =
-
-  let merge { Properties = ps; RawDataBlocks = bs } { Type = ty'; Properties = ps'; BigEndian = bigEndian; RawDataBlocks = bs' } =
-    { Type = ty'; Properties = Map.fold (fun ps k v -> Map.add k v ps) ps' ps; RawDataBlocks = List.append bs bs'; BigEndian = bigEndian }
+module Object =
   
-  let tryPropertyValue<'T> name channel =
-    Map.tryFind name channel.Properties |> Option.bind Value.tryGet<'T>
+  let tryPropertyValue<'T> name { Properties = properties } =
+    Seq.tryFind (fun (property: Property) -> property.Name = name) properties
+    |> Option.map (fun property -> property.Value)
+    |> Option.bind Value.tryGet<'T>
+    
+  let unsafePropertyValue name { Properties = properties } =
+    Seq.find (fun (property: Property) -> property.Name = name) properties
+    |> (fun property -> property.Value.Raw)
   
-  let unsafePropertyValue name channel =
-    Map.tryFind name channel.Properties |> Option.get |> (fun v -> v.Raw)
-  
-  let tryRawData<'t> path { Type = ty; RawDataBlocks = rawDataBlocks; BigEndian = bigEndian } =
+  let tryRawData<'t> path { LastRawDataIndex = rawDataIndex; RawDataBlocks = rawDataBlocks; BigEndian = bigEndian } =
+    Option.bind (function | String _ -> Some typeof<string> | OtherType(ty', _, _) -> Type.system ty') rawDataIndex 
+    |> Option.bind (fun ty ->
     if typeof<'t>.IsAssignableFrom ty then
       use fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, false)
       if ty = typeof<bool> then
@@ -59,9 +67,11 @@ module Channel =
                       read reader :?> 't |]*)
         None
     else
-      None
-    
-  let tryRawDataAsync<'t> path { Type = ty; RawDataBlocks = rawDataBlocks; BigEndian = bigEndian } =
+      None)
+
+  let tryRawDataAsync<'t> path { LastRawDataIndex = rawDataIndex; RawDataBlocks = rawDataBlocks; BigEndian = bigEndian } =
+    Option.bind (function | String _ -> Some typeof<string> | OtherType(ty', _, _) -> Type.system ty') rawDataIndex
+    |> Option.map (fun ty ->
     if ty <> typeof<'t> then Task.FromResult None
     else if ty = typeof<bool> then
       task {
@@ -135,4 +145,5 @@ module Channel =
         let! result = Reader.readComplexRawDataAsync fileStream rawDataBlocks bigEndian
         return box result |> tryUnbox<'t []>
       } 
-    else Task.FromResult None
+    else Task.FromResult None)
+    |> Option.defaultValue (Task.FromResult None)

@@ -10,16 +10,13 @@
   <ItemGroup>
     <Compile Include="ProvidedTypes.fsi" />
     <Compile Include="ProvidedTypes.fs" />
-    <Compile Include="Map.fs" />
     <Compile Include="Type.fs" />
     <Compile Include="Value.fs" />
     <Compile Include="Reader.fs" />
-    <Compile Include="Channel.fs" />
-    <Compile Include="Group.fs" />
-    <Compile Include="Index.fs" />
     <Compile Include="Property.fs" />
+    <Compile Include="Object.fs" />
     <Compile Include="Segment.fs" />
-    <Compile Include="SegmentedIndex.fs" />
+    <Compile Include="Index.fs" />
     <Compile Include="File.fs" />
     <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
     <Compile Include="FSharp.Data.Tdms.DesignTime.fs" />
