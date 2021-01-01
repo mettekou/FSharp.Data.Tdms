@@ -35,7 +35,7 @@ type LeadIn =
     RawDataOffset : uint64 }
 
 type Index = {
-    Objects: Object System.Collections.Generic.List
+    Objects: FSharp.Data.Tdms.Object List
 }
 
 module Segment =
@@ -163,7 +163,7 @@ module Segment =
       | 0x69120000u | 0x69130000u -> failwith "DAQmx raw data not implemented"
       | length -> failwithf "Invalid raw data index length: %i" length
 
-  let createObject name (objects: Object List) bigEndian =
+  let createObject name (objects: _ List) bigEndian =
     match Seq.cast objects |> Seq.tryFind (fun object -> object.Name = name) with
     | Some object -> object
     | None ->
