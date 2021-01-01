@@ -223,7 +223,3 @@ module Segment =
     let nextSegmentOffset = metaDataStart + leadIn.NextSegmentOffset
     if not fromIndex then stream.Seek(int64 nextSegmentOffset, SeekOrigin.Begin) |> ignore
     nextSegmentOffset
-
-      readMetaData index (uint64 metaDataStart + leadIn.RawDataOffset) &span (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
-      ArrayPool<byte>.Shared.Return(buffer, false)
-    if not fromIndex then stream.Seek(metaDataStart + int64 leadIn.NextSegmentOffset, SeekOrigin.Begin) |> ignore
