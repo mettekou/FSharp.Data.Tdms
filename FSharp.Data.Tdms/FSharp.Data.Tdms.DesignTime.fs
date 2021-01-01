@@ -12,7 +12,7 @@ open FSharp.Data.Tdms
 
 [<TypeProvider>]
 type TdmsProvider (config : TypeProviderConfig) as this =
-    inherit TypeProviderForNamespaces (config, assemblyReplacementMap=[("FSharp.Data.Tdms.DesignTime", "FSharp.Data.Tdms.Runtime")],  addDefaultProbingLocation = true)
+    inherit TypeProviderForNamespaces (config, assemblyReplacementMap=[("FSharp.Data.Tdms", "FSharp.Data.Tdms")],  addDefaultProbingLocation = true)
 
     let ns = "FSharp.Data"
     let execAsm = Assembly.GetExecutingAssembly()
@@ -32,35 +32,39 @@ type TdmsProvider (config : TypeProviderConfig) as this =
       fileField.SetFieldAttributes(FieldAttributes.Private)
       root.AddMember(fileField)
       root.AddMember(constructor)
-      (*for (n, p) in Map.toList file.Index.Properties do
-        ProvidedProperty(n, Type.system p.Type |> Option.defaultValue typeof<unit>, getterCode = fun args -> <@@ Index.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], fileField)) : File).Index @@>) |> root.AddMember
-      for (gn, g) in Map.toList file.Index.Groups do
-        let group = ProvidedTypeDefinition(asm, ns, gn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
+      let objects = Seq.cast<Object> file.Index.Objects
+      Seq.tryFind (fun object -> object.Name = "/") objects
+      |> Option.iter (fun { Properties = properties } ->
+          for { Name = n; Value = p } in properties do
+            ProvidedProperty(n, Type.system p.Type |> Option.defaultValue typeof<unit>, getterCode = fun args -> <@@ Index.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], fileField)) : File).Index @@>) |> root.AddMember)
+      for g in Seq.filter (fun object -> Array.length (object.Name.Split('/')) = 2) objects do
+        let group = ProvidedTypeDefinition(asm, ns, g.Name, Some typeof<obj>, isErased = false, hideObjectMethods = true)
         root.AddMember(group)
-        let groupField = ProvidedField("_group", typeof<Group>)
+        let groupField = ProvidedField("_group", typeof<Object>)
         let groupPathField = ProvidedField("_file", typeof<File>)
-        let groupConstructor = ProvidedConstructor([ProvidedParameter("group", typeof<Group>); ProvidedParameter("file", typeof<File>)], invokeCode = fun args -> Expr.Sequential(Expr.FieldSet(args.[0], groupField, <@@ (%%args.[1] : Group) @@>), Expr.FieldSet(args.[0], groupPathField, <@@ (%%args.[2] : File) @@>)))
+        let groupConstructor = ProvidedConstructor([ProvidedParameter("group", typeof<Object>); ProvidedParameter("file", typeof<File>)], invokeCode = fun args -> Expr.Sequential(Expr.FieldSet(args.[0], groupField, <@@ (%%args.[1] : Object) @@>), Expr.FieldSet(args.[0], groupPathField, <@@ (%%args.[2] : File) @@>)))
         groupField.SetFieldAttributes(FieldAttributes.Private)
         group.AddMember(groupField)
         group.AddMember(groupPathField)
         group.AddMember(groupConstructor)
-        ProvidedProperty(propertyName = gn, propertyType = group.AsType(), getterCode = fun args -> Expr.NewObject(groupConstructor, [(<@@ Index.unsafeGroup gn (%%(Expr.FieldGet(args.[0], fileField)) : File).Index @@>); <@@ (%%(Expr.FieldGet(args.[0], fileField)) : File) @@>])) |> root.AddMember
-        for (n, p) in Map.toList g.Properties do
-          ProvidedProperty(propertyName = n, propertyType = (Type.system p.Type |> Option.defaultValue typeof<unit>), getterCode = fun args -> <@@ Group.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], groupField)) : Group) @@>) |> group.AddMember
-        for (cn, c) in Map.toList g.Channels do
-          let channel = ProvidedTypeDefinition(asm, ns, cn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
+        ProvidedProperty(propertyName = g.Name, propertyType = group.AsType(), getterCode = fun args -> Expr.NewObject(groupConstructor, [(<@@ Index.unsafeGroup g.Name (%%(Expr.FieldGet(args.[0], fileField)) : File).Index @@>); <@@ (%%(Expr.FieldGet(args.[0], fileField)) : File) @@>])) |> root.AddMember
+        for { Name = n; Value = p } in g.Properties do
+          ProvidedProperty(propertyName = n, propertyType = (Type.system p.Type |> Option.defaultValue typeof<unit>), getterCode = fun args -> <@@ Object.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], groupField)) : Object) @@>) |> group.AddMember
+        for c in Seq.filter (fun object -> Array.length (object.Name.Split('/')) = 3 && object.Name.Split('/').[1] = g.Name.Split('/').[1]) objects do
+          let channel = ProvidedTypeDefinition(asm, ns, c.Name, Some typeof<obj>, isErased = false, hideObjectMethods = true)
           group.AddMember(channel)
-          let channelField = ProvidedField("_channel", typeof<Channel>)
+          let channelField = ProvidedField("_channel", typeof<Object>)
           let channelPathField = ProvidedField("_file", typeof<File>)
-          let channelConstructor = ProvidedConstructor([ProvidedParameter("channel", typeof<Channel>); ProvidedParameter("file", typeof<File>)], invokeCode = fun args -> Expr.Sequential(Expr.FieldSet(args.[0], channelField, <@@ (%%args.[1] : Channel) @@>), Expr.FieldSet(args.[0], channelPathField, <@@ (%%args.[2] : File) @@>)))
+          let channelConstructor = ProvidedConstructor([ProvidedParameter("channel", typeof<Object>); ProvidedParameter("file", typeof<File>)], invokeCode = fun args -> Expr.Sequential(Expr.FieldSet(args.[0], channelField, <@@ (%%args.[1] : Object) @@>), Expr.FieldSet(args.[0], channelPathField, <@@ (%%args.[2] : File) @@>)))
           channel.AddMember(channelField)
           channel.AddMember(channelPathField)
           channel.AddMember(channelConstructor)
-          ProvidedProperty(propertyName = cn, propertyType = channel.AsType(), getterCode = fun args -> Expr.NewObject(channelConstructor, [(<@@ Group.unsafeChannel cn (%%(Expr.FieldGet(args.[0], groupField)) : Group) @@>); (<@@ (%%(Expr.FieldGet(args.[0], groupPathField)) : File) @@>)])) |> group.AddMember
-          for (cpn, cp) in Map.toList c.Properties do
-            ProvidedProperty(propertyName = cpn, propertyType = (Type.system cp.Type |> Option.defaultValue typeof<unit>), getterCode = fun args -> <@@ Channel.unsafePropertyValue cpn (%%(Expr.FieldGet(args.[0], channelField)) : Channel) @@>) |> channel.AddMember
-          ProvidedProperty(propertyName = "Data", propertyType = c.Type.MakeArrayType(), getterCode = let ty = c.Type in fun args -> <@@ rawData ty gn cn (%%(Expr.FieldGet(args.[0], channelPathField)) : File) @@>) |> channel.AddMember
-      *)
+          ProvidedProperty(propertyName = c.Name, propertyType = channel.AsType(), getterCode = fun args -> Expr.NewObject(channelConstructor, [(<@@ Index.unsafeChannel g.Name c.Name (%%(Expr.FieldGet(args.[0], fileField)) : File).Index @@>); (<@@ (%%(Expr.FieldGet(args.[0], groupPathField)) : File) @@>)])) |> group.AddMember
+          for { Name = cpn; Value = cp } in c.Properties do
+            ProvidedProperty(propertyName = cpn, propertyType = (Type.system cp.Type |> Option.defaultValue typeof<unit>), getterCode = fun args -> <@@ Object.unsafePropertyValue cpn (%%(Expr.FieldGet(args.[0], channelField)) : Object) @@>) |> channel.AddMember
+          let ty = match c.LastRawDataIndex.Value with | String _ -> typeof<string> | OtherType (ty, _, _) -> Type.system ty |> Option.defaultValue typeof<obj>
+          ProvidedProperty(propertyName = "Data", propertyType = ty.MakeArrayType(), getterCode = fun args -> <@@ rawData ty g.Name c.Name (%%(Expr.FieldGet(args.[0], channelPathField)) : File) @@>) |> channel.AddMember
+      
       asm.AddTypes([root])
       root
   

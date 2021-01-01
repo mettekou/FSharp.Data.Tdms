@@ -50,6 +50,10 @@ module Index =
     Seq.cast<Object> objects
     |> Seq.find (fun object -> object.Name = "/'" + groupName + "'")
   
+  let unsafeChannel groupName channelName { Objects = objects } =
+    Seq.cast<Object> objects
+    |> Seq.find (fun object -> object.Name = "/'" + groupName + "'/'" + channelName + "'")
+  
   let tryChannel groupName channelName { Objects = objects } =
     Seq.cast<Object> objects
     |> Seq.tryFind (fun object -> object.Name = "/'" + groupName + "'/'" + channelName + "'")
