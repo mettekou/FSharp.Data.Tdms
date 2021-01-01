@@ -12,8 +12,9 @@ module Index =
 
   let readSegments fromIndex leadInBuffer (stream : Stream) indexStream =
     let segmentedIndex = { Objects = List() }
+    let mutable offset = 0uL
     while stream.Position < stream.Length do
-      Segment.read fromIndex segmentedIndex leadInBuffer stream indexStream
+      offset <- Segment.read offset fromIndex segmentedIndex leadInBuffer stream indexStream
     segmentedIndex
     
   let read fromIndex writeIndex (path : string) (indexPath: string) =

@@ -201,7 +201,7 @@ module Segment =
 
   let tdsh = [| 0x54uy; 0x44uy; 0x53uy; 0x68uy |]
 
-  let read fromIndex index leadInBuffer (stream : Stream) (indexStream : Stream) =
+  let read offset fromIndex index leadInBuffer (stream : Stream) (indexStream : Stream) =
     stream.Read(leadInBuffer, 0, 28) |> ignore
     let mutable leadInSpan = ReadOnlySpan leadInBuffer
     let writeIndex = isNull indexStream |> not
@@ -210,7 +210,7 @@ module Segment =
       indexStream.Write(tdsh, 0, 4)
       indexStream.Write(leadInBuffer, 4, 24)
     let leadIn = readLeadIn &leadInSpan
-    let metaDataStart = stream.Position
+    let metaDataStart = offset + 28uL
     if leadIn.TableOfContents.HasFlag(TableOfContents.ContainsMetaData)
     then
       let remainingLength = int leadIn.RawDataOffset
@@ -218,6 +218,12 @@ module Segment =
       stream.Read(buffer, 0, remainingLength) |> ignore
       let mutable span = ReadOnlySpan buffer
       if writeIndex then indexStream.Write(buffer, 0, remainingLength)
+      readMetaData index (metaDataStart + leadIn.RawDataOffset) &span (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
+      ArrayPool<byte>.Shared.Return(buffer, false)
+    let nextSegmentOffset = metaDataStart + leadIn.NextSegmentOffset
+    if not fromIndex then stream.Seek(int64 nextSegmentOffset, SeekOrigin.Begin) |> ignore
+    nextSegmentOffset
+
       readMetaData index (uint64 metaDataStart + leadIn.RawDataOffset) &span (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
       ArrayPool<byte>.Shared.Return(buffer, false)
     if not fromIndex then stream.Seek(metaDataStart + int64 leadIn.NextSegmentOffset, SeekOrigin.Begin) |> ignore
