@@ -60,6 +60,13 @@ type File with
     static member Read (path, writeIndex) = File.read path writeIndex
 
     /// <summary>
+    /// Asynchronously opens a TDMS file, reads the index from it, and closes it.
+    /// </summary>
+    /// <param name="path"> The path to the TDMS file to read.</param>
+    /// <param name="writeIndex"> Whether to write the TDMS index file.</param>
+    static member ReadAsync (path, writeIndex) = File.readAsync path writeIndex
+
+    /// <summary>
     /// Tries to get the raw data for the given channel, belonging to the given group in the given TDMS file.
     /// </summary>
     member file.TryGetRawData<'T> (groupName, channelName, [<Out>] rawData : byref<'T []>) =
@@ -68,6 +75,16 @@ type File with
             | Some rd ->
                 rawData <- rd
                 true
+
+    /// <summary>
+    /// Asynchronously gets the raw data for the given channel, belonging to the given group in the given TDMS file.
+    /// </summary>
+    member file.GetRawDataAsync<'t> (groupName, channelName) =
+        task {
+            match! File.tryRawDataAsync<'t> groupName channelName file with
+            | None -> return null
+            | Some rd -> return rd
+        }
 
     /// <summary>
     /// Tries to get a property value for the given TDMS file.
