@@ -132,11 +132,9 @@ module Segment =
     | Type.ComplexSingleFloat -> Complex(readFloat32 &buffer bigEndian |> float, readFloat32 &buffer bigEndian |> float) |> box
     | Type.ComplexDoubleFloat -> Complex(readFloat &buffer bigEndian, readFloat &buffer bigEndian) |> box
     | Type.Timestamp ->
-      DateTime(1904, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-        .AddSeconds(float (readUInt64 &buffer bigEndian) / float(UInt64.MaxValue))
-        .AddSeconds(float (readInt64 &buffer bigEndian))
-        .ToLocalTime()
-        |> box
+        (if bigEndian
+         then { SecondsSinceNiEpoch = readInt64 &buffer bigEndian; FractionsOfASecond = readUInt64 &buffer bigEndian }
+         else { FractionsOfASecond = readUInt64 &buffer bigEndian; SecondsSinceNiEpoch = readInt64 &buffer bigEndian }) |> box
     | Type.String -> readString &buffer bigEndian |> box
 
   let readRawDataIndex object (rawDataPosition: uint64) (buffer: byte ReadOnlySpan byref) bigEndian =

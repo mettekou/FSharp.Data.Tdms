@@ -10,6 +10,7 @@
   <ItemGroup>
     <Compile Include="ProvidedTypes.fsi" />
     <Compile Include="ProvidedTypes.fs" />
+    <Compile Include="Timestamp.fs" />
     <Compile Include="Type.fs" />
     <Compile Include="Value.fs" />
     <Compile Include="Reader.fs" />

@@ -26,9 +26,8 @@ type Type =
 
 module Type =
   
-  open System
   open System.Numerics
-
+  
   let system ``type`` =
     match ``type`` with
     | Type.Void -> Some typeof<unit>
@@ -45,4 +44,5 @@ module Type =
     | Type.DoubleFloat | Type.DoubleFloatWithUnit -> Some typeof<float>
     | Type.ComplexDoubleFloat -> Some typeof<Complex>
     | Type.String -> Some typeof<string>
+    | Type.Timestamp -> Some typeof<Timestamp>
     | Type.ComplexSingleFloat | Type.DaqMxRawData | Type.ExtendedFloat | Type.ExtendedFloatWithUnit | Type.FixedPoint -> None

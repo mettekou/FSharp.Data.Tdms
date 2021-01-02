@@ -51,6 +51,22 @@ module Reader =
             MemoryMarshal.Cast<Complex, double>(data.AsSpan()).Reverse()
             data
 
+    let readTimestampRawData (stream: Stream) (segments: (uint64 * uint64) seq) bigEndian =
+        if not bigEndian then
+            readPrimitiveRawData<Timestamp> stream segments false
+        else
+            let mutable position = 0
+            let size = sizeof<Timestamp>
+            let data = Seq.sumBy snd segments |> int |> Array.zeroCreate<Timestamp>
+            let span = MemoryMarshal.Cast<Timestamp, byte>(data.AsSpan())
+            for (start, length) in segments do
+                stream.Seek(int64 start, SeekOrigin.Begin) |> ignore
+                stream.Read(span.Slice(position * size, int length * size)) |> ignore
+                position <- position + int length
+            span.Reverse()
+            Array.Reverse data
+            data
+
     let readPrimitiveRawDataAsync<'t when 't : struct and 't : (new : unit -> 't) and 't :> ValueType> (stream: Stream) (segments: (uint64 * uint64) seq) bigEndian =
         let mutable position = 0
         let size = sizeof<'t>
@@ -90,5 +106,27 @@ module Reader =
 
                 memory.Span.Reverse()
                 cast<Complex, double>(data.AsMemory()).Span.Reverse()
+                return data
+            }
+
+    let readTimestampRawDataAsync (stream: Stream) (segments: (uint64 * uint64) seq) bigEndian =
+        if not bigEndian then
+            readPrimitiveRawDataAsync<Timestamp> stream segments false
+        else
+            let mutable position = 0
+            let size = sizeof<Timestamp>
+            let data = Seq.sumBy snd segments |> int |> Array.zeroCreate<Timestamp>
+            let memory = cast<Timestamp, byte> (data.AsMemory())
+
+            task {
+                for (start, length) in segments do
+                    stream.Seek(int64 start, SeekOrigin.Begin) |> ignore
+
+                    let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
+
+                    position <- position + int length
+                    
+                memory.Span.Reverse()
+                Array.Reverse data
                 return data
             }
