@@ -91,11 +91,14 @@ module Segment =
     Encoding.GetEncoding(1252).GetString bytes
 
   let readLeadIn (buffer: byte ReadOnlySpan byref) =
-    { Tag = readUInt &buffer false |> LanguagePrimitives.EnumOfValue<uint32, Tag>
-      TableOfContents = readUInt &buffer false |> LanguagePrimitives.EnumOfValue<uint32, TableOfContents>
-      Version = readUInt &buffer false |> LanguagePrimitives.EnumOfValue<uint32, Version>
-      NextSegmentOffset = readUInt64 &buffer false
-      RawDataOffset = readUInt64 &buffer false }
+    let tag = readUInt &buffer false |> LanguagePrimitives.EnumOfValue<uint32, Tag>
+    let tableOfContents = readUInt &buffer false |> LanguagePrimitives.EnumOfValue<uint32, TableOfContents>
+    let bigEndian = tableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)
+    { Tag = tag
+      TableOfContents = tableOfContents
+      Version = readUInt &buffer bigEndian |> LanguagePrimitives.EnumOfValue<uint32, Version>
+      NextSegmentOffset = readUInt64 &buffer bigEndian
+      RawDataOffset = readUInt64 &buffer bigEndian }
 
   let readLeadInMemory (memory: byte ReadOnlyMemory) =
     let mutable buffer = memory.Span
