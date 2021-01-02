@@ -43,7 +43,6 @@ module Type =
     | Type.U64 -> Some typeof<uint64>
     | Type.SingleFloat | Type.SingleFloatWithUnit -> Some typeof<float32>
     | Type.DoubleFloat | Type.DoubleFloatWithUnit -> Some typeof<float>
-    | Type.ComplexSingleFloat | Type.ComplexDoubleFloat -> Some typeof<Complex>
+    | Type.ComplexDoubleFloat -> Some typeof<Complex>
     | Type.String -> Some typeof<string>
-    | Type.Timestamp -> Some typeof<DateTime>
-    | Type.DaqMxRawData | Type.ExtendedFloat | Type.ExtendedFloatWithUnit | Type.FixedPoint -> None
+    | Type.ComplexSingleFloat | Type.DaqMxRawData | Type.ExtendedFloat | Type.ExtendedFloatWithUnit | Type.FixedPoint -> None
