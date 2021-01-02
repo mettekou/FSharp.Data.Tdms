@@ -8,6 +8,7 @@ open System.IO
 open System.Numerics
 open System.Runtime.InteropServices
 open System.Text
+open FSharp.Control.Tasks.NonAffine
 
 type Tag =
   | Tdsm = 1834173524u
@@ -95,6 +96,10 @@ module Segment =
       Version = readUInt &buffer false |> LanguagePrimitives.EnumOfValue<uint32, Version>
       NextSegmentOffset = readUInt64 &buffer false
       RawDataOffset = readUInt64 &buffer false }
+
+  let readLeadInMemory (memory: byte ReadOnlyMemory) =
+    let mutable buffer = memory.Span
+    readLeadIn &buffer
 
   let readPropertyValue (buffer: byte ReadOnlySpan byref) bigEndian =
     function
@@ -187,6 +192,10 @@ module Segment =
               | None -> object.Properties.Add property
               | Some index -> object.Properties.[index] <- property
 
+  let readMetaDataMemory index (rawDataOffset: uint64) (memory: byte ReadOnlyMemory) bigEndian =
+    let mutable buffer = memory.Span
+    readMetaData index rawDataOffset &buffer bigEndian
+
   (*let chunkDataSize indices = List.sum (List.map (fun i ->
       match i with
         | None -> 0uL
@@ -223,3 +232,28 @@ module Segment =
     let nextSegmentOffset = metaDataStart + leadIn.NextSegmentOffset
     if not fromIndex then stream.Seek(int64 nextSegmentOffset, SeekOrigin.Begin) |> ignore
     nextSegmentOffset
+
+  let readAsync offset fromIndex index leadInBuffer (stream : Stream) (indexStream : Stream) =
+    task {
+      let! _ = stream.ReadAsync(leadInBuffer, 0, 28)
+      let mutable leadInMemory = ReadOnlyMemory leadInBuffer
+      let writeIndex = isNull indexStream |> not
+      if writeIndex
+      then
+        do! indexStream.WriteAsync(tdsh, 0, 4)
+        do! indexStream.WriteAsync(leadInBuffer, 4, 24)
+      let leadIn = readLeadInMemory leadInMemory
+      let metaDataStart = offset + 28uL
+      if leadIn.TableOfContents.HasFlag(TableOfContents.ContainsMetaData)
+      then
+        let remainingLength = int leadIn.RawDataOffset
+        let buffer = ArrayPool<byte>.Shared.Rent remainingLength
+        let! _ = stream.ReadAsync(buffer, 0, remainingLength)
+        let mutable memory = ReadOnlyMemory buffer
+        if writeIndex then do! indexStream.WriteAsync(buffer, 0, remainingLength)
+        readMetaDataMemory index (metaDataStart + leadIn.RawDataOffset) memory (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
+        ArrayPool<byte>.Shared.Return(buffer, false)
+      let nextSegmentOffset = metaDataStart + leadIn.NextSegmentOffset
+      if not fromIndex then stream.Seek(int64 nextSegmentOffset, SeekOrigin.Begin) |> ignore
+      return nextSegmentOffset
+    }

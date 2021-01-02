@@ -1,6 +1,7 @@
 namespace FSharp.Data.Tdms
 
 open System.Runtime.InteropServices
+open FSharp.Control.Tasks.NonAffine
 
 type File = {
     Path: string
@@ -20,6 +21,14 @@ module File =
         let indexExists = File.Exists(indexPath)
         { Path = path; Index = Index.read indexExists (not indexExists && writeIndex) (if indexExists then indexPath else path) indexPath }
     
+    let readAsync path writeIndex =
+        let indexPath = Path.ChangeExtension(path, ".tdms_index")
+        let indexExists = File.Exists(indexPath)
+        task {
+            let! index = Index.readAsync indexExists (not indexExists && writeIndex) (if indexExists then indexPath else path) indexPath
+            return { Path = path; Index = index }
+        }
+
     /// <summary>
     /// Tries to get the raw data for a <c>channel</c> within a <c>group</c>.
     /// </summary>
