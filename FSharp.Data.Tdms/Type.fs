@@ -29,15 +29,6 @@ module Type =
   open System
   open System.Numerics
 
-  let size ``type`` =
-    match ``type`` with
-    | Type.Void | Type.Boolean | Type.I8 | Type.U8 -> Some 1u
-    | Type.I16 | Type.U16 -> Some 2u
-    | Type.I32 | Type.U32 | Type.SingleFloat | Type.SingleFloatWithUnit -> Some 4u
-    | Type.I64 | Type.U64 | Type.DoubleFloat | Type.DoubleFloatWithUnit | Type.ComplexSingleFloat | Type.FixedPoint -> Some 8u
-    | Type.ComplexDoubleFloat | Type.Timestamp | Type.ExtendedFloat | Type.ExtendedFloatWithUnit -> Some 16u
-    | Type.String | Type.DaqMxRawData -> None
-  
   let system ``type`` =
     match ``type`` with
     | Type.Void -> Some typeof<unit>
