@@ -3,28 +3,9 @@ namespace FSharp.Data.Tdms
 open System
 open System.IO
 open System.Numerics
+open System.Runtime.InteropServices
 open System.Threading.Tasks
 open FSharp.Control.Tasks.NonAffine
-
-type FormatChangingScaler =
-    { DaqMxDataType: uint32
-      RawBufferIndex: uint32
-      RawByteOffsetWithinStride: uint32
-      SampleFormatBitmap: uint32
-      ScaleId: uint32 }
-
-type InterleavedPrimitiveRawDataBlock =
-    { Start: uint64
-      Count: uint64
-      mutable Skip: uint64 }
-
-type PrimitiveRawDataBlock =
-    | DecimatedPrimitiveRawDataBlock of (uint64 * uint64)
-    | InterleavedPrimitiveRawDataBlock of InterleavedPrimitiveRawDataBlock
-
-type RawDataBlocks =
-    | PrimitiveRawDataBlocks of Type * PrimitiveRawDataBlock ResizeArray
-    | StringRawDataBlocks of (uint64 * uint64 * uint64) ResizeArray
 
 type Object =
     { Name: string
@@ -68,6 +49,97 @@ module Object =
                 ty'
         | Some (StringRawDataBlocks stringRawDataBlockArray) -> stringRawDataBlockArray.Add stringRawDataBlock
 
+    let readRawDataIndex
+        object
+        (rawDataPosition: uint64)
+        (buffer: byte ReadOnlySpan byref)
+        bigEndian
+        (interleaved: bool)
+        =
+        match Buffer.readUInt &buffer bigEndian with
+        | 0u ->
+            match object.RawDataBlocks with
+            | None -> failwithf "Missing raw data index for object %s; check whether the TDMS file is valid" object.Name
+            | Some (PrimitiveRawDataBlocks (ty, primitiveRawDataBlockArray)) ->
+                match Seq.tryLast primitiveRawDataBlockArray with
+                | None ->
+                    failwithf
+                        "Missing primitive raw data blocks for object %s; this is a bug in FSharp.Data.Tdms"
+                        object.Name
+                | Some (DecimatedPrimitiveRawDataBlock (_, bytes)) ->
+                    if interleaved then
+                        failwithf
+                            "Object %s raw data changes from decimated to interleaved without a new raw data index; check whether the TDMS file is valid"
+                            object.Name
+                    else
+                        primitiveRawDataBlockArray.Add(DecimatedPrimitiveRawDataBlock(rawDataPosition, bytes))
+                        bytes
+                | Some (InterleavedPrimitiveRawDataBlock _) ->
+                    if not interleaved then
+                        failwithf
+                            "Object %s raw data changes from interleaved to decimated without a new raw data index; check whether the TDMS file is valid"
+                            object.Name
+                    else
+                        uint64 (Marshal.SizeOf ty)
+            | Some (StringRawDataBlocks stringRawDataBlockArray) ->
+                match Seq.tryLast stringRawDataBlockArray with
+                | None ->
+                    failwithf
+                        "Missing string raw data blocks for object %s; this is a bug in FSharp.Data.Tdms"
+                        object.Name
+                | Some (offset, length, bytes) ->
+                    stringRawDataBlockArray.Add(offset, length, bytes)
+                    bytes
+        | 20u ->
+            let ty = Buffer.readType &buffer bigEndian
+            Buffer.readUInt &buffer bigEndian |> ignore
+            let length = Buffer.readUInt64 &buffer bigEndian
+            let size = Marshal.SizeOf ty
+
+            if not interleaved then
+                addPrimitiveRawDataBlock ty (DecimatedPrimitiveRawDataBlock(rawDataPosition, length)) object
+                length * uint64 size
+            else
+                addPrimitiveRawDataBlock
+                    ty
+                    (InterleavedPrimitiveRawDataBlock
+                        { Start = rawDataPosition
+                          Count = length
+                          Skip = 0uL })
+                    object
+
+                uint64 size
+        | 28u ->
+            Buffer.readType &buffer bigEndian |> ignore
+            Buffer.readUInt &buffer bigEndian |> ignore
+
+            let length = Buffer.readUInt64 &buffer bigEndian
+            let bytes = Buffer.readUInt64 &buffer bigEndian
+            addStringRawDataBlock (rawDataPosition, length, bytes) object
+            bytes
+        | 0xFFFFFFFFu -> 0uL
+        | 0x1269u
+        | 0x126Au ->
+            let ty = Buffer.readType &buffer bigEndian
+            let dimension = Buffer.readUInt &buffer bigEndian
+            let chunkSize = Buffer.readUInt64 &buffer bigEndian
+            let scalerCount = Buffer.readUInt &buffer bigEndian |> int
+
+            let scalers =
+                Array.zeroCreate<FormatChangingScaler> scalerCount
+
+            for scalerIndex = 0 to scalerCount - 1 do
+                scalers.[scalerIndex] <- RawDataBlock.readFormatChangingScaler &buffer bigEndian
+
+            let widthCount = Buffer.readUInt &buffer bigEndian |> int
+            let widths = Array.zeroCreate<uint> widthCount
+
+            for widthIndex = 0 to widthCount - 1 do
+                widths.[widthIndex] <- Buffer.readUInt &buffer bigEndian
+            //object.LastRawDataIndex <- Some (DaqMx (ty, dimension, chunkSize, scalers, widths))
+            0uL
+        | length -> failwithf "Invalid raw data index length: %i" length
+
     let tryPropertyValue<'T> name { Properties = properties } =
         Seq.tryFind (fun (property: Property) -> property.Name = name) properties
         |> Option.bind Property.tryGet<'T>
@@ -84,67 +156,61 @@ module Object =
         match rawDataBlocks with
         | None -> None
         | Some (PrimitiveRawDataBlocks (ty, rawDataBlockArray)) ->
-            let rawDataBlockArray' =
-                rawDataBlockArray
-                |> Seq.choose
-                    (function
-                    | DecimatedPrimitiveRawDataBlock block -> Some block
-                    | _ -> None)
 
             if typeof<'t>.IsAssignableFrom ty then
                 use fileStream =
                     new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, false)
 
                 if ty = typeof<bool> then
-                    Reader.readPrimitiveRawData<bool> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<bool> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<sbyte> then
-                    Reader.readPrimitiveRawData<sbyte> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<sbyte> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<int16> then
-                    Reader.readPrimitiveRawData<int16> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<int16> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<int> then
-                    Reader.readPrimitiveRawData<int> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<int> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<int64> then
-                    Reader.readPrimitiveRawData<int64> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<int64> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<byte> then
-                    Reader.readPrimitiveRawData<byte> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<byte> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<uint16> then
-                    Reader.readPrimitiveRawData<uint16> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<uint16> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<uint> then
-                    Reader.readPrimitiveRawData<uint> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<uint> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<uint64> then
-                    Reader.readPrimitiveRawData<uint64> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<uint64> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<float32> then
-                    Reader.readPrimitiveRawData<float32> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<float32> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<float> then
-                    Reader.readPrimitiveRawData<float> fileStream rawDataBlockArray' bigEndian
+                    Reader.readPrimitiveRawData<float> fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<Complex> then
-                    Reader.readComplexRawData fileStream rawDataBlockArray' bigEndian
+                    Reader.readComplexRawData fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 elif ty = typeof<Timestamp> then
-                    Reader.readTimestampRawData fileStream rawDataBlockArray' bigEndian
+                    Reader.readTimestampRawData fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
                 else
@@ -154,7 +220,7 @@ module Object =
                     use fileStream =
                         new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, false)
 
-                    Reader.readTimestampRawData fileStream rawDataBlockArray' bigEndian
+                    Reader.readTimestampRawData fileStream rawDataBlockArray bigEndian
                     |> Array.map Timestamp.toDateTime
                     |> box
                     |> tryUnbox<'t []>
@@ -162,7 +228,7 @@ module Object =
                     use fileStream =
                         new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, false)
 
-                    Reader.readTimestampRawData fileStream rawDataBlockArray' bigEndian
+                    Reader.readTimestampRawData fileStream rawDataBlockArray bigEndian
                     |> Array.map Timestamp.toDateTimeOffset
                     |> box
                     |> tryUnbox<'t []>
@@ -170,7 +236,7 @@ module Object =
                     use fileStream =
                         new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, false)
 
-                    Reader.readTimestampRawData fileStream rawDataBlockArray' bigEndian
+                    Reader.readTimestampRawData fileStream rawDataBlockArray bigEndian
                     |> Array.map Timestamp.toTimeSpan
                     |> box
                     |> tryUnbox<'t []>
@@ -197,12 +263,6 @@ module Object =
         match rawDataBlocks with
         | None -> Task.FromResult None
         | Some (PrimitiveRawDataBlocks (ty, rawDataBlockArray)) ->
-            let rawDataBlockArray' =
-                rawDataBlockArray
-                |> Seq.choose
-                    (function
-                    | DecimatedPrimitiveRawDataBlock block -> Some block
-                    | _ -> None)
 
             if ty = typeof<'t> then
                 if ty = typeof<bool> then
@@ -210,7 +270,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<bool> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<bool> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<sbyte> then
@@ -218,7 +278,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<sbyte> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<sbyte> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<int16> then
@@ -226,7 +286,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<int16> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<int16> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<int> then
@@ -234,7 +294,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<int> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<int> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<int64> then
@@ -242,7 +302,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<int64> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<int64> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<byte> then
@@ -250,7 +310,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<byte> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<byte> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<uint16> then
@@ -258,7 +318,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<uint16> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<uint16> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<uint> then
@@ -266,7 +326,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<uint> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<uint> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<uint64> then
@@ -274,7 +334,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<uint64> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<uint64> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<float32> then
@@ -282,7 +342,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<float32> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<float32> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<float> then
@@ -290,7 +350,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<float> fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<float> fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<Complex> then
@@ -298,7 +358,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
-                        let! result = Reader.readComplexRawDataAsync fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readComplexRawDataAsync fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else
@@ -309,7 +369,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, false)
 
-                        let! result = Reader.readTimestampRawDataAsync fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readTimestampRawDataAsync fileStream rawDataBlockArray bigEndian
 
                         return
                             Array.map Timestamp.toDateTime result
@@ -321,7 +381,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, false)
 
-                        let! result = Reader.readTimestampRawDataAsync fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readTimestampRawDataAsync fileStream rawDataBlockArray bigEndian
 
                         return
                             Array.map Timestamp.toDateTimeOffset result
@@ -333,7 +393,7 @@ module Object =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, false)
 
-                        let! result = Reader.readTimestampRawDataAsync fileStream rawDataBlockArray' bigEndian
+                        let! result = Reader.readTimestampRawDataAsync fileStream rawDataBlockArray bigEndian
 
                         return
                             Array.map Timestamp.toTimeSpan result

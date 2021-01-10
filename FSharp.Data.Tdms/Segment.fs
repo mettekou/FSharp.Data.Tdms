@@ -144,7 +144,7 @@ module Segment =
 
             rawDataPosition <-
                 rawDataPosition
-                + RawDataBlock.readRawDataIndex object rawDataPosition &buffer bigEndian interleaved
+                + Object.readRawDataIndex object rawDataPosition &buffer bigEndian interleaved
 
             let propertyCount = Buffer.readUInt &buffer bigEndian |> int
 

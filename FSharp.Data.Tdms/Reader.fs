@@ -33,51 +33,27 @@ module Reader =
 
     let readPrimitiveRawData<'t when 't: struct and 't: (new: unit -> 't) and 't :> ValueType>
         (stream: Stream)
-        (segments: (uint64 * uint64) seq)
+        (segments: PrimitiveRawDataBlock seq)
         bigEndian
         =
         let mutable position = 0
         let size = sizeof<'t>
 
         let data =
-            Seq.sumBy snd segments
+            Seq.sumBy
+                (function
+                | DecimatedPrimitiveRawDataBlock (_, size) -> size
+                | InterleavedPrimitiveRawDataBlock { Count = count } -> count)
+                segments
             |> int
             |> Array.zeroCreate<'t>
 
         let span =
             MemoryMarshal.Cast<'t, byte>(data.AsSpan())
 
-        for (start, length) in segments do
-            stream.Seek(int64 start, SeekOrigin.Begin)
-            |> ignore
-
-            stream.Read(span.Slice(position * size, int length * size))
-            |> ignore
-
-            position <- position + int length
-
-        if bigEndian && size > 1 then
-            span.Reverse()
-            Array.Reverse data
-
-        data
-
-    let readComplexRawData (stream: Stream) (segments: (uint64 * uint64) seq) bigEndian =
-        if not bigEndian then
-            readPrimitiveRawData<Complex> stream segments false
-        else
-            let mutable position = 0
-            let size = sizeof<Complex>
-
-            let data =
-                Seq.sumBy snd segments
-                |> int
-                |> Array.zeroCreate<Complex>
-
-            let span =
-                MemoryMarshal.Cast<Complex, byte>(data.AsSpan())
-
-            for (start, length) in segments do
+        for segment in segments do
+            match segment with
+            | DecimatedPrimitiveRawDataBlock (start, length) ->
                 stream.Seek(int64 start, SeekOrigin.Begin)
                 |> ignore
 
@@ -85,6 +61,71 @@ module Reader =
                 |> ignore
 
                 position <- position + int length
+            | InterleavedPrimitiveRawDataBlock { Start = start
+                                                 Count = count
+                                                 Skip = skip } ->
+                stream.Seek(int64 start, SeekOrigin.Begin)
+                |> ignore
+
+                for _ = 0 to int count - 1 do
+                    stream.Read(span.Slice(position * size, size))
+                    |> ignore
+
+                    stream.Seek(int64 skip, SeekOrigin.Current)
+                    |> ignore
+
+                    position <- position + 1
+
+
+        if bigEndian && size > 1 then
+            span.Reverse()
+            Array.Reverse data
+
+        data
+
+    let readComplexRawData (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
+        if not bigEndian then
+            readPrimitiveRawData<Complex> stream segments false
+        else
+            let mutable position = 0
+            let size = sizeof<Complex>
+
+            let data =
+                Seq.sumBy
+                    (function
+                    | DecimatedPrimitiveRawDataBlock (_, size) -> size
+                    | InterleavedPrimitiveRawDataBlock { Count = count } -> count)
+                    segments
+                |> int
+                |> Array.zeroCreate<Complex>
+
+            let span =
+                MemoryMarshal.Cast<Complex, byte>(data.AsSpan())
+
+            for segment in segments do
+                match segment with
+                | DecimatedPrimitiveRawDataBlock (start, length) ->
+                    stream.Seek(int64 start, SeekOrigin.Begin)
+                    |> ignore
+
+                    stream.Read(span.Slice(position * size, int length * size))
+                    |> ignore
+
+                    position <- position + int length
+                | InterleavedPrimitiveRawDataBlock { Start = start
+                                                     Count = count
+                                                     Skip = skip } ->
+                    stream.Seek(int64 start, SeekOrigin.Begin)
+                    |> ignore
+
+                    for _ = 0 to int count - 1 do
+                        stream.Read(span.Slice(position * size, size))
+                        |> ignore
+
+                        stream.Seek(int64 skip, SeekOrigin.Current)
+                        |> ignore
+
+                        position <- position + 1
 
             span.Reverse()
 
@@ -94,7 +135,7 @@ module Reader =
 
             data
 
-    let readTimestampRawData (stream: Stream) (segments: (uint64 * uint64) seq) bigEndian =
+    let readTimestampRawData (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
         if not bigEndian then
             readPrimitiveRawData<Timestamp> stream segments false
         else
@@ -102,12 +143,64 @@ module Reader =
             let size = sizeof<Timestamp>
 
             let data =
-                Seq.sumBy snd segments
+                Seq.sumBy
+                    (function
+                    | DecimatedPrimitiveRawDataBlock (_, size) -> size
+                    | InterleavedPrimitiveRawDataBlock { Count = count } -> count)
+                    segments
                 |> int
                 |> Array.zeroCreate<Timestamp>
 
             let span =
                 MemoryMarshal.Cast<Timestamp, byte>(data.AsSpan())
+
+            for segment in segments do
+                match segment with
+                | DecimatedPrimitiveRawDataBlock (start, length) ->
+                    stream.Seek(int64 start, SeekOrigin.Begin)
+                    |> ignore
+
+                    stream.Read(span.Slice(position * size, int length * size))
+                    |> ignore
+
+                    position <- position + int length
+                | InterleavedPrimitiveRawDataBlock { Start = start
+                                                     Count = count
+                                                     Skip = skip } ->
+                    stream.Seek(int64 start, SeekOrigin.Begin)
+                    |> ignore
+
+                    for _ = 0 to int count - 1 do
+                        stream.Read(span.Slice(position * size, size))
+                        |> ignore
+
+                        stream.Seek(int64 skip, SeekOrigin.Current)
+                        |> ignore
+
+                        position <- position + 1
+
+            span.Reverse()
+            Array.Reverse data
+            data
+
+    (*let readFloat80RawData (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
+        if not bigEndian then
+            readPrimitiveRawData<float80> stream segments false
+        else
+            let mutable position = 0
+            let size = sizeof<float80>
+
+            let data =
+                Seq.sumBy
+                    (function
+                    | DecimatedPrimitiveRawDataBlock (_, size) -> size
+                    | InterleavedPrimitiveRawDataBlock { Count = count } -> count)
+                    segments
+                |> int
+                |> Array.zeroCreate<float80>
+
+            let span =
+                MemoryMarshal.Cast<float80, byte>(data.AsSpan())
 
             for (start, length) in segments do
                 stream.Seek(int64 start, SeekOrigin.Begin)
@@ -118,23 +211,10 @@ module Reader =
 
                 position <- position + int length
 
-            span.Reverse()
-            Array.Reverse data
-            data
+            MemoryMarshal
+                .Cast<byte, struct (uint64 * uint16)>(span)
+                .Reverse()
 
-    (*let readFloat80RawData (stream: Stream) (segments: (uint64 * uint64) seq) bigEndian =
-        if not bigEndian then
-            readPrimitiveRawData<float80> stream segments false
-        else
-            let mutable position = 0
-            let size = sizeof<float80>
-            let data = Seq.sumBy snd segments |> int |> Array.zeroCreate<float80>
-            let span = MemoryMarshal.Cast<float80, byte>(data.AsSpan())
-            for (start, length) in segments do
-                stream.Seek(int64 start, SeekOrigin.Begin) |> ignore
-                stream.Read(span.Slice(position * size, int length * size)) |> ignore
-                position <- position + int length
-            MemoryMarshal.Cast<byte, struct (uint64 * uint16)>(span).Reverse()
             Array.Reverse data
             data*)
 
@@ -197,27 +277,46 @@ module Reader =
 
     let readPrimitiveRawDataAsync<'t when 't: struct and 't: (new: unit -> 't) and 't :> ValueType>
         (stream: Stream)
-        (segments: (uint64 * uint64) seq)
+        (segments: PrimitiveRawDataBlock seq)
         bigEndian
         =
         let mutable position = 0
         let size = sizeof<'t>
 
         let data =
-            Seq.sumBy snd segments
+            Seq.sumBy
+                (function
+                | DecimatedPrimitiveRawDataBlock (_, size) -> size
+                | InterleavedPrimitiveRawDataBlock { Count = count } -> count)
+                segments
             |> int
             |> Array.zeroCreate<'t>
 
         let memory = cast<'t, byte> (data.AsMemory())
 
         task {
-            for (start, length) in segments do
-                stream.Seek(int64 start, SeekOrigin.Begin)
-                |> ignore
+            for segment in segments do
+                match segment with
+                | DecimatedPrimitiveRawDataBlock (start, length) ->
+                    stream.Seek(int64 start, SeekOrigin.Begin)
+                    |> ignore
 
-                let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
+                    let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
 
-                position <- position + int length
+                    position <- position + int length
+                | InterleavedPrimitiveRawDataBlock { Start = start
+                                                     Count = count
+                                                     Skip = skip } ->
+                    stream.Seek(int64 start, SeekOrigin.Begin)
+                    |> ignore
+
+                    for _ = 0 to int count - 1 do
+                        let! _ = stream.ReadAsync(memory.Slice(position * size, size))
+
+                        stream.Seek(int64 skip, SeekOrigin.Current)
+                        |> ignore
+
+                        position <- position + 1
 
             if bigEndian then
                 memory.Span.Reverse()
@@ -226,7 +325,7 @@ module Reader =
             return data
         }
 
-    let readComplexRawDataAsync (stream: Stream) (segments: (uint64 * uint64) seq) bigEndian =
+    let readComplexRawDataAsync (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
         if not bigEndian then
             readPrimitiveRawDataAsync<Complex> stream segments false
         else
@@ -234,20 +333,39 @@ module Reader =
             let size = sizeof<Complex>
 
             let data =
-                Seq.sumBy snd segments
+                Seq.sumBy
+                    (function
+                    | DecimatedPrimitiveRawDataBlock (_, size) -> size
+                    | InterleavedPrimitiveRawDataBlock { Count = count } -> count)
+                    segments
                 |> int
                 |> Array.zeroCreate<Complex>
 
             let memory = cast<Complex, byte> (data.AsMemory())
 
             task {
-                for (start, length) in segments do
-                    stream.Seek(int64 start, SeekOrigin.Begin)
-                    |> ignore
+                for segment in segments do
+                    match segment with
+                    | DecimatedPrimitiveRawDataBlock (start, length) ->
+                        stream.Seek(int64 start, SeekOrigin.Begin)
+                        |> ignore
 
-                    let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
+                        let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
 
-                    position <- position + int length
+                        position <- position + int length
+                    | InterleavedPrimitiveRawDataBlock { Start = start
+                                                         Count = count
+                                                         Skip = skip } ->
+                        stream.Seek(int64 start, SeekOrigin.Begin)
+                        |> ignore
+
+                        for _ = 0 to int count - 1 do
+                            let! _ = stream.ReadAsync(memory.Slice(position * size, size))
+
+                            stream.Seek(int64 skip, SeekOrigin.Current)
+                            |> ignore
+
+                            position <- position + 1
 
                 memory.Span.Reverse()
 
@@ -257,7 +375,7 @@ module Reader =
                 return data
             }
 
-    let readTimestampRawDataAsync (stream: Stream) (segments: (uint64 * uint64) seq) bigEndian =
+    let readTimestampRawDataAsync (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
         if not bigEndian then
             readPrimitiveRawDataAsync<Timestamp> stream segments false
         else
@@ -265,20 +383,39 @@ module Reader =
             let size = sizeof<Timestamp>
 
             let data =
-                Seq.sumBy snd segments
+                Seq.sumBy
+                    (function
+                    | DecimatedPrimitiveRawDataBlock (_, size) -> size
+                    | InterleavedPrimitiveRawDataBlock { Count = count } -> count)
+                    segments
                 |> int
                 |> Array.zeroCreate<Timestamp>
 
             let memory = cast<Timestamp, byte> (data.AsMemory())
 
             task {
-                for (start, length) in segments do
-                    stream.Seek(int64 start, SeekOrigin.Begin)
-                    |> ignore
+                for segment in segments do
+                    match segment with
+                    | DecimatedPrimitiveRawDataBlock (start, length) ->
+                        stream.Seek(int64 start, SeekOrigin.Begin)
+                        |> ignore
 
-                    let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
+                        let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
 
-                    position <- position + int length
+                        position <- position + int length
+                    | InterleavedPrimitiveRawDataBlock { Start = start
+                                                         Count = count
+                                                         Skip = skip } ->
+                        stream.Seek(int64 start, SeekOrigin.Begin)
+                        |> ignore
+
+                        for _ = 0 to int count - 1 do
+                            let! _ = stream.ReadAsync(memory.Slice(position * size, size))
+
+                            stream.Seek(int64 skip, SeekOrigin.Current)
+                            |> ignore
+
+                            position <- position + 1
 
                 memory.Span.Reverse()
                 Array.Reverse data
