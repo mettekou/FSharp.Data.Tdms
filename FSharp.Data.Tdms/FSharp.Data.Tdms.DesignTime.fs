@@ -1,6 +1,5 @@
 namespace FSharp.Data
 
-open System.Collections.Generic
 open System.IO
 open FSharp.Core.CompilerServices
 open FSharp.Quotations
@@ -36,8 +35,8 @@ type TdmsProvider (config : TypeProviderConfig) as this =
       let objects  = file.Index.Objects.ToArray()
       Array.tryFind (fun object -> object.Name = "/") objects
       |> Option.iter (fun { Properties = properties } ->
-          for { Name = n; Value = p } in properties do
-            ProvidedProperty(n, Type.system p.Type |> Option.defaultValue typeof<unit>, getterCode = fun args -> <@@ Index.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], fileField)) : File).Index @@>) |> root.AddMember)
+          for { Name = n; Type = pty } in properties do
+            ProvidedProperty(n, pty, getterCode = fun args -> <@@ Index.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], fileField)) : File).Index @@>) |> root.AddMember)
       for g in Array.filter (fun object -> Array.length (object.Name.Split('/')) = 2) objects do
         let gn = g.Name.Split('/').[1].Trim(''')
         let group = ProvidedTypeDefinition(asm, ns, gn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
@@ -50,8 +49,8 @@ type TdmsProvider (config : TypeProviderConfig) as this =
         group.AddMember(groupPathField)
         group.AddMember(groupConstructor)
         ProvidedProperty(propertyName = gn, propertyType = group.AsType(), getterCode = fun args -> Expr.NewObject(groupConstructor, [(<@@ Index.unsafeGroup gn (%%(Expr.FieldGet(args.[0], fileField)) : File).Index @@>); <@@ (%%(Expr.FieldGet(args.[0], fileField)) : File) @@>])) |> root.AddMember
-        for { Name = n; Value = p } in g.Properties do
-          ProvidedProperty(propertyName = n, propertyType = (Type.system p.Type |> Option.defaultValue typeof<unit>), getterCode = fun args -> <@@ Object.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], groupField)) : Object) @@>) |> group.AddMember
+        for { Name = n; Type = gpty } in g.Properties do
+          ProvidedProperty(propertyName = n, propertyType = gpty, getterCode = fun args -> <@@ Object.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], groupField)) : Object) @@>) |> group.AddMember
         for c in Array.filter (fun object -> Array.length (object.Name.Split('/')) = 3 && object.Name.Split('/').[1] = g.Name.Split('/').[1]) objects do
           let cn = c.Name.Split('/').[2].Trim(''')
           let channel = ProvidedTypeDefinition(asm, ns, cn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
@@ -63,10 +62,10 @@ type TdmsProvider (config : TypeProviderConfig) as this =
           channel.AddMember(channelPathField)
           channel.AddMember(channelConstructor)
           ProvidedProperty(propertyName = cn, propertyType = channel.AsType(), getterCode = fun args -> Expr.NewObject(channelConstructor, [(<@@ Index.unsafeChannel gn cn (%%(Expr.FieldGet(args.[0], groupPathField)) : File).Index @@>); (<@@ (%%(Expr.FieldGet(args.[0], groupPathField)) : File) @@>)])) |> group.AddMember
-          for { Name = cpn; Value = cp } in c.Properties do
-            ProvidedProperty(propertyName = cpn, propertyType = (Type.system cp.Type |> Option.defaultValue typeof<unit>), getterCode = fun args -> <@@ Object.unsafePropertyValue cpn (%%(Expr.FieldGet(args.[0], channelField)) : Object) @@>) |> channel.AddMember
-          let ty = match c.LastRawDataIndex.Value with | String _ -> typeof<string> | OtherType (ty, _, _) -> Type.system ty |> Option.defaultValue typeof<obj>
-          ProvidedProperty(propertyName = "Data", propertyType = ty.MakeArrayType(), getterCode = fun args -> <@@ rawData ty gn cn (%%(Expr.FieldGet(args.[0], channelPathField)) : File) @@>) |> channel.AddMember
+          for { Name = cpn; Type = cpty } in c.Properties do
+            ProvidedProperty(propertyName = cpn, propertyType = cpty, getterCode = fun args -> <@@ Object.unsafePropertyValue cpn (%%(Expr.FieldGet(args.[0], channelField)) : Object) @@>) |> channel.AddMember
+          // let ty = match c.LastRawDataIndex.Value with | String _ -> typeof<string> | OtherType (ty, _, _) -> Type.system ty |> Option.defaultValue typeof<obj>
+          // ProvidedProperty(propertyName = "Data", propertyType = ty.MakeArrayType(), getterCode = fun args -> <@@ rawData ty gn cn (%%(Expr.FieldGet(args.[0], channelPathField)) : File) @@>) |> channel.AddMember
       asm.AddTypes([root])
       root
   

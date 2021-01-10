@@ -31,7 +31,7 @@ module Index =
       let segmentedIndex = readSegments fromIndex leadInBuffer stream null
       ArrayPool<byte>.Shared.Return(leadInBuffer, false)
       segmentedIndex
-    
+
   let readSegmentsAsync fromIndex leadInBuffer (stream : Stream) indexStream =
     task {
       let segmentedIndex = { Objects = List() }
@@ -67,13 +67,13 @@ module Index =
     Seq.cast<Object> objects
     |> Seq.tryFind (fun object -> object.Name = "/") 
     |> Option.bind (fun object -> Seq.tryFind (fun (property: Property) -> property.Name = name) object.Properties)
-    |> Option.bind (fun property -> Value.tryGet<'t> property.Value)
+    |> Option.bind (fun property -> Property.tryGet<'t> property)
     
   let unsafePropertyValue name { Objects = objects } =
     Seq.cast<Object> objects
     |> Seq.find (fun object -> object.Name = "/")
     |> (fun object -> Seq.find (fun (property: Property) -> property.Name = name) object.Properties)
-    |> (fun property ->  Value.tryGet<'t> property.Value |> Option.get)
+    |> (fun property ->  Property.tryGet<'t> property |> Option.get)
   
   let tryGroup groupName { Objects = objects } =
     Seq.cast<Object> objects
@@ -82,7 +82,7 @@ module Index =
   let unsafeGroup groupName { Objects = objects } =
     Seq.cast<Object> objects
     |> Seq.find (fun object -> object.Name = "/'" + groupName + "'")
-  
+
   let unsafeChannel groupName channelName { Objects = objects } =
     Seq.cast<Object> objects
     |> Seq.find (fun object -> object.Name = "/'" + groupName + "'/'" + channelName + "'")
@@ -93,7 +93,7 @@ module Index =
 
   let tryRawData<'t> path groupName channelName index =
     let channel = tryChannel groupName channelName index
-    channel |> Option.bind (Object.tryRawData<'t> (Path.ChangeExtension(path, ".tdms")))
+    channel |> Option.bind (Object.tryRawData<'t> path)
 
   let tryRawDataAsync<'t> path groupName channelName index =
     tryChannel groupName channelName index
