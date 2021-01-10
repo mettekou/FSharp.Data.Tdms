@@ -1,6 +1,7 @@
 namespace FSharp.Data.Tdms
 
 open System
+open System.Runtime.InteropServices
 
 module RawDataBlock =
 
@@ -29,8 +30,20 @@ module RawDataBlock =
                         "Missing primitive raw data blocks for object %s; this is a bug in FSharp.Data.Tdms"
                         object.Name
                 | Some (DecimatedPrimitiveRawDataBlock (_, bytes)) ->
-                    primitiveRawDataBlockArray.Add(DecimatedPrimitiveRawDataBlock(rawDataPosition, bytes))
-                    rawDataPosition + bytes
+                    if interleaved then
+                        failwithf
+                            "Object %s raw data changes from decimated to interleaved without a new raw data index; check whether the TDMS file is valid"
+                            object.Name
+                    else
+                        primitiveRawDataBlockArray.Add(DecimatedPrimitiveRawDataBlock(rawDataPosition, bytes))
+                        bytes
+                | Some (InterleavedPrimitiveRawDataBlock _) ->
+                    if not interleaved then
+                        failwithf
+                            "Object %s raw data changes from interleaved to decimated without a new raw data index; check whether the TDMS file is valid"
+                            object.Name
+                    else
+                        uint64 (Marshal.SizeOf ty)
             | Some (StringRawDataBlocks stringRawDataBlockArray) ->
                 match Seq.tryLast stringRawDataBlockArray with
                 | None ->
@@ -39,14 +52,27 @@ module RawDataBlock =
                         object.Name
                 | Some (offset, length, bytes) ->
                     stringRawDataBlockArray.Add(offset, length, bytes)
-                    rawDataPosition + bytes
+                    bytes
         | 20u ->
             let ty = Buffer.readType &buffer bigEndian
             Buffer.readUInt &buffer bigEndian |> ignore
             let length = Buffer.readUInt64 &buffer bigEndian
-            let bytes = length
-            Object.addPrimitiveRawDataBlock ty (DecimatedPrimitiveRawDataBlock(rawDataPosition, bytes)) object
-            rawDataPosition + bytes
+
+            if not interleaved then
+                Object.addPrimitiveRawDataBlock ty (DecimatedPrimitiveRawDataBlock(rawDataPosition, length)) object
+                length
+            else
+                let size = Marshal.SizeOf ty
+
+                Object.addPrimitiveRawDataBlock
+                    ty
+                    (InterleavedPrimitiveRawDataBlock
+                        { Start = rawDataPosition
+                          Count = length
+                          Skip = 0uL })
+                    object
+
+                uint64 size
         | 28u ->
             Buffer.readType &buffer bigEndian |> ignore
             Buffer.readUInt &buffer bigEndian |> ignore
@@ -54,8 +80,8 @@ module RawDataBlock =
             let length = Buffer.readUInt64 &buffer bigEndian
             let bytes = Buffer.readUInt64 &buffer bigEndian
             Object.addStringRawDataBlock (rawDataPosition, length, bytes) object
-            rawDataPosition + bytes
-        | 0xFFFFFFFFu -> rawDataPosition
+            bytes
+        | 0xFFFFFFFFu -> 0uL
         | 0x1269u
         | 0x126Au ->
             let ty = Buffer.readType &buffer bigEndian
@@ -75,5 +101,5 @@ module RawDataBlock =
             for widthIndex = 0 to widthCount - 1 do
                 widths.[widthIndex] <- Buffer.readUInt &buffer bigEndian
             //object.LastRawDataIndex <- Some (DaqMx (ty, dimension, chunkSize, scalers, widths))
-            rawDataPosition
+            0uL
         | length -> failwithf "Invalid raw data index length: %i" length

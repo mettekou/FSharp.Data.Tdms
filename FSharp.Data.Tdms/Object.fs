@@ -13,9 +13,14 @@ type FormatChangingScaler =
       SampleFormatBitmap: uint32
       ScaleId: uint32 }
 
+type InterleavedPrimitiveRawDataBlock =
+    { Start: uint64
+      Count: uint64
+      mutable Skip: uint64 }
+
 type PrimitiveRawDataBlock =
     | DecimatedPrimitiveRawDataBlock of (uint64 * uint64)
-    | InterleavedPrimitiveRawDataBlock of (uint64 * uint64)
+    | InterleavedPrimitiveRawDataBlock of InterleavedPrimitiveRawDataBlock
 
 type RawDataBlocks =
     | PrimitiveRawDataBlocks of Type * PrimitiveRawDataBlock ResizeArray

@@ -6,7 +6,6 @@ open System.Collections.Generic
 open System.IO
 open System.Numerics
 open System.Runtime.InteropServices
-open System.Text
 open FSharp.Control.Tasks.NonAffine
 
 type Tag =
@@ -134,13 +133,19 @@ module Segment =
 
     let readMetaData { Objects = objects } rawDataOffset (buffer: _ byref) bigEndian interleaved =
         let objectCount = Buffer.readInt &buffer bigEndian
+        let newOrUpdatedObjects = Array.zeroCreate objectCount
         let mutable rawDataPosition = rawDataOffset
 
         for i = 0 to objectCount - 1 do
             let object =
                 createObject (Buffer.readString &buffer bigEndian) objects bigEndian
 
-            rawDataPosition <- RawDataBlock.readRawDataIndex object rawDataPosition &buffer bigEndian interleaved
+            newOrUpdatedObjects.[i] <- object
+
+            rawDataPosition <-
+                rawDataPosition
+                + RawDataBlock.readRawDataIndex object rawDataPosition &buffer bigEndian interleaved
+
             let propertyCount = Buffer.readUInt &buffer bigEndian |> int
 
             for j = 0 to propertyCount - 1 do
@@ -158,6 +163,23 @@ module Segment =
                 match Seq.tryFindIndex (fun (property: Property) -> property.Name = propertyName) object.Properties with
                 | None -> object.Properties.Add property
                 | Some index -> object.Properties.[index] <- property
+
+        if interleaved then
+            Array.iter
+                (fun { RawDataBlocks = rawDataBlocks } ->
+                    match rawDataBlocks with
+                    | None -> ()
+                    | Some (StringRawDataBlocks _) -> ()
+                    | Some (PrimitiveRawDataBlocks (ty, primitiveRawDataBlocksArray)) ->
+                        Seq.tryLast primitiveRawDataBlocksArray
+                        |> Option.iter
+                            (function
+                            | DecimatedPrimitiveRawDataBlock _ -> ()
+                            | InterleavedPrimitiveRawDataBlock interleavedPrimitiveRawDataBlock ->
+                                interleavedPrimitiveRawDataBlock.Skip <-
+                                    (rawDataPosition - rawDataOffset)
+                                    - uint64 (Marshal.SizeOf ty)))
+                newOrUpdatedObjects
 
     let readMetaDataMemory index (rawDataOffset: uint64) (memory: byte ReadOnlyMemory) bigEndian interleaved =
         let mutable buffer = memory.Span
