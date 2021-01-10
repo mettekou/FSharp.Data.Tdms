@@ -108,8 +108,8 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        var file = await File.ReadAsync("Experiment.tdms", true)
-        var data = await file.TryGetRawDataAsync("Group1", "Channel1", out double[] data);
+        var file = await File.ReadAsync("Experiment.tdms", true);
+        var data = await file.TryGetRawDataAsync("Group1", "Channel1");
 
         foreach (double sample in data)
         {
