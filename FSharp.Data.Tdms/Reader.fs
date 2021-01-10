@@ -314,7 +314,7 @@ module Reader =
 
                 let offsetsByteMemory = cast<uint, uint8> offsetsMemory
 
-                stream.ReadAsync(offsetsByteMemory) |> ignore
+                let! _ = stream.ReadAsync(offsetsByteMemory)
 
                 if bigEndian then
                     offsetsByteMemory.Span.Reverse()
@@ -322,7 +322,7 @@ module Reader =
 
                 let mutable dataMemory = data.AsMemory().Slice(0, int bytes)
 
-                stream.ReadAsync(dataMemory) |> ignore
+                let! _ = stream.ReadAsync(dataMemory)
 
                 let mutable offset = 0
 
