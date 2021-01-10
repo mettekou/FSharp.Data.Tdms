@@ -185,7 +185,7 @@ This means that `FSharp.Data.Tdms` may perform better in practice for TDMS files
 
 === Small file
 
-This benchmark reads a segmented 3.1 MB TDMS 2.0 file and then reads a double-precision floating-point channel from it.
+This benchmark reads 30,489 double-precision floating points from a segmented 3.1 MB TDMS 2.0 file.
 
 [source,ini]
 ----
@@ -208,7 +208,7 @@ Job=.NET Core 5.0  Runtime=.NET Core 5.0
 
 === Medium-sized file
 
-This benchmark reads a channel of 43 200 strings from a segmented 138.1 MB TDMS 2.0 file.
+This benchmark reads a channel of 43,200 strings from a segmented 138.1 MB TDMS 2.0 file.
 
 [source,ini]
 ----
@@ -231,7 +231,7 @@ Job=.NET Core 5.0  Runtime=.NET Core 5.0
 
 === Large file
 
-This benchmark reads a channel of n double-precision floating points from a 1.54 GB TDMS 2.0 file.
+This benchmark reads a channel of 779,297 double-precision floating points from a segmented 1.54 GB TDMS 2.0 file.
 
 [source,ini]
 ----
