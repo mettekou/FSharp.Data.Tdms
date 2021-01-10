@@ -122,7 +122,7 @@ class Program
 === Property and raw data types
 
 Most TDMS 2.0 data types directly map to .NET 5.0 data types.
-The first exception is `tdsTypeTimeStamp`, which you can read as either `FSharp.Data.Tdms.Timestamp` (this data type corresponds to https://www.ni.com/nl-be/support/documentation/supplemental/08/labview-timestamp-overview.html[the NI LabVIEW timestamp]), `System.DateTime`, `System.DateTimeOffset`, or `System.TimeSpan`.
+The first exception is `tdsTypeTimeStamp`, which you can read as either link:FSharp.Data.Tdms/Timestamp.fs[`FSharp.Data.Tdms.Timestamp`] (this data type corresponds to https://www.ni.com/nl-be/support/documentation/supplemental/08/labview-timestamp-overview.html[the NI LabVIEW timestamp]), `System.DateTime`, `System.DateTimeOffset`, or `System.TimeSpan`.
 In case of `System.TimeSpan`, `FSharp.Data.Tdms` returns the time elapsed since `01/01/1904 00:00:00.00 UTC`, as per https://www.ni.com/nl-be/support/documentation/supplemental/08/labview-timestamp-overview.html[this support document from NI].
 
 The second exception is `tdsTypeExtendedFloat`.
