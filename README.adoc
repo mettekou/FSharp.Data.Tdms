@@ -1,6 +1,17 @@
-= F# TDMS Support image:https://buildstats.info/nuget/FSharp.Data.Tdms[link=https://www.nuget.org/packages/FSharp.Data.Tdms]
+= `FSharp.Data.Tdms` image:https://buildstats.info/nuget/FSharp.Data.Tdms?includePreReleases=true[link=https://www.nuget.org/packages/FSharp.Data.Tdms]
+:toc:
 
-`FSharp.Data.Tdms` provides support for TDMS files[[the-ni-tdms-file-format]]<<#the-ni-tdms-file-format-entry,^[1]^>>. It allows a user to access these in a type-safe manner through a generative type provider, but also through plain old functions.
+`FSharp.Data.Tdms` provides support for TDMS 2.0 files[[the-ni-tdms-file-format]]<<#the-ni-tdms-file-format-entry,^[1]^>> from F# and C# on .NET 5.0.
+From F# it allows you to access these in a type-safe manner through a generative https://docs.microsoft.com/en-us/dotnet/fsharp/tutorials/type-providers/[type provider], while plain old functions and methods are available to both F# and C#.
+`FSharp.Data.Tdms` reads raw channel data from TDMS 2.0 files as arrays.
+
+== Missing features
+
+- Reading extended-precision floating-point data
+- Reading interleaved data
+- Reading DAQmx raw data
+- Defragmenting TDMS files
+- Writing TDMS files
 
 == License
 
@@ -14,12 +25,14 @@ Using the generative type provider, given a TDMS file `Experiment.tdms` with a c
 
 [source,fsharp]
 ----
+#r "nuget: FSharp.Data.Tdms"
+
 open FSharp.Data
 
 [<Literal>]
 let Path = "Experiment.tdms"
 
-type Experiment = TdmsProvider<Path>
+type Experiment = TdmsProvider<Path, WriteIndex = true>
 
 let experiment = Experiment(Path)
 
@@ -30,12 +43,35 @@ Alternatively, use the functions in the `FSharp.Data.Tdms` namespace, mainly tho
 
 [source,fsharp]
 ----
+#r "nuget: FSharp.Data.Tdms"
+
 open FSharp.Data.Tdms
 
-File.read "Experiment.tdms" true |>
-    File.tryRawData<float> "Group1" "Channel1" |>
-    Option.defaultValue [||] |>
-    Array.iter (printfn "%f")
+File.read "Experiment.tdms" true
+|> File.tryRawData<float> "Group1" "Channel1"
+|> Option.defaultValue [||]
+|> Array.iter (printfn "%f")
+----
+
+These functions have asynchronous equivalents:
+
+[source,fsharp]
+----
+#r "nuget: Ply"
+#r "nuget: FSharp.Data.Tdms"
+
+open FSharp.Control.Tasks.NonAffine
+open FSharp.Data.Tdms
+
+task {
+    let! file = File.readAsync "Experiment.tdms" true
+    let! data = File.tryRawDataAsync<float> "Group1" "Channel1"
+
+    Option.defaultValue data
+    |> Array.iter (printfn "%f")
+}
+|> Async.AwaitTask
+|> Async.RunSynchronously
 ----
 
 === From C#
@@ -60,6 +96,177 @@ class Program
     }
 }
 ----
+
+Or asynchronously:
+
+[source,csharp]
+----
+using System;
+using FSharp.Data.Tdms;
+
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        var file = await File.ReadAsync("Experiment.tdms", true)
+        var data = await file.TryGetRawDataAsync("Group1", "Channel1", out double[] data);
+
+        foreach (double sample in data)
+        {
+            Console.WriteLine(sample);
+        }
+    }
+}
+----
+
+=== Property and raw data types
+
+Most TDMS 2.0 data types directly map to .NET 5.0 data types.
+The first exception is `tdsTypeTimeStamp`, which you can read as either `FSharp.Data.Tdms.Timestamp` (this data type corresponds to https://www.ni.com/nl-be/support/documentation/supplemental/08/labview-timestamp-overview.html[the NI LabVIEW timestamp]), `System.DateTime`, `System.DateTimeOffset`, or `System.TimeSpan`.
+In case of `System.TimeSpan`, `FSharp.Data.Tdms` returns the time elapsed since `01/01/1904 00:00:00.00 UTC`, as per https://www.ni.com/nl-be/support/documentation/supplemental/08/labview-timestamp-overview.html[this support document from NI].
+
+The second exception is `tdsTypeExtendedFloat`.
+Since .NET 5.0 does not support 80-bit extended precision floating point numbers, `FSharp.Data.Tdms` reads these as link:FSharp.Data.Tdms/Extended.fs[`FSharp.Data.Tdms.Extended`] values.
+
+.Mapping from TDMS 2.0 to .NET 5.0 data types in `FSharp.Data.Tdms`
+|===
+| Name | TDMS 2.0 data type | .NET 5.0 data type | F# alias | C# alias
+| Void | `tdsTypeVoid` | https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-unit.html[`FSharp.Core.Unit`] | `unit` | None
+| 8-bit signed integer | `tdsTypeI8` | https://docs.microsoft.com/en-us/dotnet/api/system.sbyte[`System.SByte`] | `int8` | `sbyte`
+| 16-bit signed integer | `tdsTypeI16` | https://docs.microsoft.com/en-us/dotnet/api/system.int16[`System.Int16`] | `int16` | `short`
+| 32-bit signed integer | `tdsTypeI32` | https://docs.microsoft.com/en-us/dotnet/api/system.int32[`System.Int32`] | `int` | `int`
+| 64-bit signed integer | `tdsTypeI64` | https://docs.microsoft.com/en-us/dotnet/api/system.int64[`System.Int64`] | `int64` | `long`
+| 8-bit unsigned integer | `tdsTypeU8` | https://docs.microsoft.com/en-us/dotnet/api/system.byte[`System.Byte`] | `uint8` | `byte`
+| 16-bit unsigned integer | `tdsTypeU16` | https://docs.microsoft.com/en-us/dotnet/api/system.uint16[`System.UInt16`] | `uint16` | `ushort`
+| 32-bit unsigned integer | `tdsTypeU32` | https://docs.microsoft.com/en-us/dotnet/api/system.uint32[`System.UInt32`] | `uint` | `uint`
+| 64-bit unsigned integer | `tdsTypeU64` | https://docs.microsoft.com/en-us/dotnet/api/system.uint64[`System.UInt64`] | `uint64` | `ulong`
+| 32-bit single-precision floating point
+a| - `tdsTypeSingleFloat` 
+- `tdsTypeSingleFloatWithUnit`
+| https://docs.microsoft.com/en-us/dotnet/api/system.single?view=net-5.0[`System.Single`]
+| `float32`
+| `float`
+| 64-bit double-precision floating point
+a| - `tdsTypeDoubleFloat` 
+- `tdsTypeDoubleFloatWithUnit`
+| https://docs.microsoft.com/en-us/dotnet/api/system.double?view=net-5.0[`System.Double`]
+| `float`
+| `double`
+| Character string | `tdsTypeString` | https://docs.microsoft.com/en-us/dotnet/api/system.string[`System.String`] | `string` | `string`
+| Boolean | `tdsTypeBoolean`
+| https://docs.microsoft.com/en-us/dotnet/api/system.boolean?view=net-5.0[`System.Boolean`]
+| `bool`
+| `bool`
+| Timestamp
+| `tdsTypeTimeStamp`
+a| - link:FSharp.Data.Tdms/Timestamp.fs[`FSharp.Data.Tdms.Timestamp`]
+- https://docs.microsoft.com/en-us/dotnet/api/system.datetime?view=net-5.0[`System.DateTime`]
+- https://docs.microsoft.com/en-us/dotnet/api/system.datetimeoffset?view=net-5.0[`System.DateTimeOffset`]
+- https://docs.microsoft.com/en-us/dotnet/api/system.timespan?view=net-5.0[`System.TimeSpan`]
+| None
+| None
+| 32-bit single-precision floating point complex
+| `tdsTypeComplexSingleFloat`
+| https://docs.microsoft.com/en-us/dotnet/api/system.valuetuple-2?view=net-5.0[`System.ValueTuple<System.Single, System.Single>`]
+| `struct (float32 * float32)`
+| `(float, float)`
+| 64-bit double-precision floating point complex
+| `tdsTypeComplexDoubleFloat`
+| https://docs.microsoft.com/en-us/dotnet/api/system.numerics.complex?view=net-5.0[`System.Numerics.Complex`]
+| None
+| None
+|===
+
+== Performance
+
+The https://benchmarkdotnet.org[BenchmarkDotNet] benchmarks in this section give an idea of the performance of `FSharp.Data.Tdms` when compared to https://github.com/mikeobrien/TDMSReader[`TDMSReader`], the only other TDMS 2.0 implementation which works on .NET 5.0.
+Since `TDMSReader` does not support reading TDMS index files, the benchmark disables this feature for `FSharp.Data.Tdms` as well, for a fair comparison.
+This means that `FSharp.Data.Tdms` may perform better in practice for TDMS files with many raw data segments.
+
+=== Small file
+
+This benchmark reads a segmented 3.1 MB TDMS 2.0 file and then reads a double-precision floating-point channel from it.
+
+[source,ini]
+----
+
+BenchmarkDotNet=v0.12.1, OS=macOS 11.1 (20C69) [Darwin 20.2.0]
+Intel Core i9-9980HK CPU 2.40GHz, 1 CPU, 16 logical and 8 physical cores
+.NET Core SDK=5.0.101
+  [Host]        : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT DEBUG
+  .NET Core 5.0 : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT
+
+Job=.NET Core 5.0  Runtime=.NET Core 5.0  
+
+----
+|===
+              Method |     Mean |     Error |    StdDev | Ratio | RatioSD 
+|          `TDMSReader` | 5.531 ms | 0.1049 ms | 0.0930 ms |  1.00 |    0.00 
+|      `FSharp.Data.Tdms` synchronously | 1.962 ms | 0.0378 ms | 0.0435 ms |  0.35 |    0.01 
+| `FSharp.Data.Tdms` asynchronously  | 5.061 ms | 0.0503 ms | 0.0471 ms |  0.91 |    0.02 
+|===
+
+=== Medium-sized file
+
+This benchmark reads a channel of 43 200 strings from a segmented 138.1 MB TDMS 2.0 file.
+
+[source,ini]
+----
+
+BenchmarkDotNet=v0.12.1, OS=macOS 11.1 (20C69) [Darwin 20.2.0]
+Intel Core i9-9980HK CPU 2.40GHz, 1 CPU, 16 logical and 8 physical cores
+.NET Core SDK=5.0.101
+  [Host]        : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT DEBUG
+  .NET Core 5.0 : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT
+
+Job=.NET Core 5.0  Runtime=.NET Core 5.0  
+
+----
+|===
+              Method |     Mean |    Error |   StdDev | Ratio
+|          `TDMSReader` | 12.334 s | 0.2287 s | 0.2139 s |  1.00
+|      `FSharp.Data.Tdms` synchronously |  4.400 s | 0.0370 s | 0.0328 s |  0.36
+| `FSharp.Data.Tdms` asynchronously |  6.797 s | 0.0981 s | 0.0918 s |  0.55
+|===
+
+=== Large file
+
+This benchmark reads a channel of n double-precision floating points from a 1.54 GB TDMS 2.0 file.
+
+[source,ini]
+----
+
+BenchmarkDotNet=v0.12.1, OS=macOS 11.1 (20C69) [Darwin 20.2.0]
+Intel Core i9-9980HK CPU 2.40GHz, 1 CPU, 16 logical and 8 physical cores
+.NET Core SDK=5.0.101
+  [Host]        : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT DEBUG
+  .NET Core 5.0 : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT
+
+Job=.NET Core 5.0  Runtime=.NET Core 5.0  
+
+----
+|===
+              Method |    Mean |    Error |   StdDev | Ratio 
+|          `TDMSReader` | 2.145 s | 0.0242 s | 0.0214 s |  1.00
+|      `FSharp.Data.Tdms` synchronously | 1.103 s | 0.0123 s | 0.0103 s |  0.52
+| `FSharp.Data.Tdms` asynchronously | 1.953 s | 0.0167 s | 0.0157 s |  0.91
+|===
+
+== How to contribute
+
+Imposter syndrome disclaimer: I want your help. No really, I do.
+
+There might be a little voice inside that tells you you're not ready; that you need to do one more tutorial, or learn another framework, or write a few more blog posts before you can help me with this project.
+
+I assure you, that's not the case.
+
+This project has some clear Contribution Guidelines and expectations that you can read here (link).
+
+The contribution guidelines outline the process that you'll need to follow to get a patch merged. By making expectations and process explicit, I hope it will make it easier for you to contribute.
+
+And you don't just have to write code. You can help out by writing documentation, tests, or even by giving feedback about this work. (And yes, that includes giving feedback about the contribution guidelines.)
+
+Thank you for contributing!
 
 == References
 

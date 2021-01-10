@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <Authors>Dylan Meysmans</Authors>
-    <Description>TDMS support for F# and C#</Description>
+    <Description>TDMS 2.0 support for F# and C#</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/mettekou/FSharp.Data.Tdms.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
