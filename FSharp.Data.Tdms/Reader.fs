@@ -183,7 +183,7 @@ module Reader =
             Array.Reverse data
             data
 
-    (*let readFloat80RawData (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
+    let readFloat80RawData (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
         if not bigEndian then
             readPrimitiveRawData<float80> stream segments false
         else
@@ -202,21 +202,36 @@ module Reader =
             let span =
                 MemoryMarshal.Cast<float80, byte>(data.AsSpan())
 
-            for (start, length) in segments do
-                stream.Seek(int64 start, SeekOrigin.Begin)
-                |> ignore
+            for segment in segments do
+                match segment with
+                | DecimatedPrimitiveRawDataBlock (start, length) ->
 
-                stream.Read(span.Slice(position * size, int length * size))
-                |> ignore
+                    stream.Seek(int64 start, SeekOrigin.Begin)
+                    |> ignore
 
-                position <- position + int length
+                    stream.Read(span.Slice(position * size, int length * size))
+                    |> ignore
 
-            MemoryMarshal
-                .Cast<byte, struct (uint64 * uint16)>(span)
-                .Reverse()
+                    position <- position + int length
+                | InterleavedPrimitiveRawDataBlock { Start = start
+                                                     Count = count
+                                                     Skip = skip } ->
+                    stream.Seek(int64 start, SeekOrigin.Begin)
+                    |> ignore
+
+                    for _ = 0 to int count - 1 do
+                        stream.Read(span.Slice(position * size, size))
+                        |> ignore
+
+                        stream.Seek(int64 skip, SeekOrigin.Current)
+                        |> ignore
+
+                        position <- position + 1
+
+            MemoryMarshal.Cast<byte, float80>(span).Reverse()
 
             Array.Reverse data
-            data*)
+            data
 
     let readStringRawData (stream: Stream) (segments: (uint64 * uint64 * uint64) seq) bigEndian =
         let offsets =
@@ -324,6 +339,57 @@ module Reader =
 
             return data
         }
+
+    let readFloat80RawDataAsync (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
+        if not bigEndian then
+            readPrimitiveRawDataAsync<float80> stream segments false
+        else
+            task {
+                let mutable position = 0
+                let size = sizeof<float80>
+
+                let data =
+                    Seq.sumBy
+                        (function
+                        | DecimatedPrimitiveRawDataBlock (_, size) -> size
+                        | InterleavedPrimitiveRawDataBlock { Count = count } -> count)
+                        segments
+                    |> int
+                    |> Array.zeroCreate<float80>
+
+                let memory = cast<float80, byte> (data.AsMemory())
+
+                for segment in segments do
+                    match segment with
+                    | DecimatedPrimitiveRawDataBlock (start, length) ->
+
+                        stream.Seek(int64 start, SeekOrigin.Begin)
+                        |> ignore
+
+                        let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
+
+                        position <- position + int length
+                    | InterleavedPrimitiveRawDataBlock { Start = start
+                                                         Count = count
+                                                         Skip = skip } ->
+                        stream.Seek(int64 start, SeekOrigin.Begin)
+                        |> ignore
+
+                        for _ = 0 to int count - 1 do
+                            let! _ = stream.ReadAsync(memory.Slice(position * size, size))
+
+                            stream.Seek(int64 skip, SeekOrigin.Current)
+                            |> ignore
+
+                            position <- position + 1
+
+                MemoryMarshal
+                    .Cast<byte, float80>(memory.Span)
+                    .Reverse()
+
+                Array.Reverse data
+                return data
+            }
 
     let readComplexRawDataAsync (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
         if not bigEndian then

@@ -7,7 +7,6 @@ From F# it allows you to access these in a type-safe manner through a generative
 
 == Missing features
 
-- Reading extended-precision floating-point data
 - Reading DAQmx raw data
 - Defragmenting TDMS files
 - Writing TDMS files
@@ -151,6 +150,12 @@ a| - `tdsTypeDoubleFloat`
 | https://docs.microsoft.com/en-us/dotnet/api/system.double?view=net-5.0[`System.Double`]
 | `float`
 | `double`
+| 80-bit extended-precision floating point
+a| - `tdsTypeExtendedFloat` 
+- `tdsTypeExtendedFloatWithUnit`
+| link:FSharp.Data.Tdms/Extended.fs[`FSharp.Data.Tdms.Extended`]
+| `float80`
+| None
 | Character string | `tdsTypeString` | https://docs.microsoft.com/en-us/dotnet/api/system.string[`System.String`] | `string` | `string`
 | Boolean | `tdsTypeBoolean`
 | https://docs.microsoft.com/en-us/dotnet/api/system.boolean?view=net-5.0[`System.Boolean`]

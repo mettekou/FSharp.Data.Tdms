@@ -213,6 +213,10 @@ module Object =
                     Reader.readTimestampRawData fileStream rawDataBlockArray bigEndian
                     |> box
                     |> tryUnbox<'t []>
+                elif ty = typeof<float80> then
+                    Reader.readFloat80RawData fileStream rawDataBlockArray bigEndian
+                    |> box
+                    |> tryUnbox<'t []>
                 else
                     None
             else if ty = typeof<Timestamp> then
@@ -351,6 +355,14 @@ module Object =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
 
                         let! result = Reader.readPrimitiveRawDataAsync<float> fileStream rawDataBlockArray bigEndian
+                        return box result |> tryUnbox<'t []>
+                    }
+                else if ty = typeof<float80> then
+                    task {
+                        use fileStream =
+                            new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true)
+
+                        let! result = Reader.readFloat80RawDataAsync fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<Complex> then
