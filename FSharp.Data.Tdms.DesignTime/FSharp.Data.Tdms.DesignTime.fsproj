@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="ProvidedTypes.fsi" />
+    <Compile Include="ProvidedTypes.fs" />
+    <Compile Include="../FSharp.Data.Tdms/Extended.fs" />
+    <Compile Include="../FSharp.Data.Tdms/Timestamp.fs" />
+    <Compile Include="../FSharp.Data.Tdms/Property.fs" />
+    <Compile Include="../FSharp.Data.Tdms/Buffer.fs" />
+    <Compile Include="../FSharp.Data.Tdms/RawDataBlock.fs" />
+    <Compile Include="../FSharp.Data.Tdms/Reader.fs" />
+    <Compile Include="../FSharp.Data.Tdms/Object.fs" />
+    <Compile Include="../FSharp.Data.Tdms/Segment.fs" />
+    <Compile Include="../FSharp.Data.Tdms/Index.fs" />
+    <Compile Include="../FSharp.Data.Tdms/File.fs" />
+    <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
+    <Compile Include="FSharp.Data.Tdms.DesignTime.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ply" Version="0.3.1" />
+  </ItemGroup>
+
+</Project>

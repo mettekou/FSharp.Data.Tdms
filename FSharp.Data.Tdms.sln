@@ -1,8 +1,10 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Data.Tdms", "FSharp.Data.Tdms\FSharp.Data.Tdms.fsproj", "{75F407E8-290D-4A79-97FE-B8B5E3F8C567}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Data.Tdms.DesignTime", "FSharp.Data.Tdms.DesignTime\FSharp.Data.Tdms.DesignTime.fsproj", "{A898C33C-6BC3-4118-8711-4C6D0B229ECE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
