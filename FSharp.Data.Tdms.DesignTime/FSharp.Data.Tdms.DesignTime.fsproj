@@ -17,7 +17,7 @@
     <Compile Include="../FSharp.Data.Tdms/Segment.fs" />
     <Compile Include="../FSharp.Data.Tdms/Index.fs" />
     <Compile Include="../FSharp.Data.Tdms/File.fs" />
-    <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
+    <Compile Include="../FSharp.Data.Tdms/FSharp.Data.Tdms.Runtime.fs" />
     <Compile Include="FSharp.Data.Tdms.DesignTime.fs" />
   </ItemGroup>
 

@@ -18,6 +18,7 @@
     <Compile Include="Segment.fs" />
     <Compile Include="Index.fs" />
     <Compile Include="File.fs" />
+    <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="5.0.0" />

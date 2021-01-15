@@ -17,6 +17,8 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="../FSharp.Data.Tdms.DesignTime/bin/Release/net5.0/publish/FSharp.Data.Tdms.DesignTime.dll" target="typeproviders/fsharp41/net5.0" />
+    <file src="../FSharp.Data.Tdms.DesignTime/bin/Release/net5.0/publish/FSharp.Core.dll" target="lib/net50" />
+    <file src="../FSharp.Data.Tdms.DesignTime/bin/Release/net5.0/publish/Ply.dll" target="lib/net50" />
+    <file src="../FSharp.Data.Tdms.DesignTime/bin/Release/net5.0/publish/FSharp.Data.Tdms.DesignTime.dll" target="lib/net50" />
   </files>
 </package>
