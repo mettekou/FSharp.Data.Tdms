@@ -3,11 +3,11 @@ namespace FSharp.Data.Tdms
 open System
 
 type FormatChangingScaler =
-    { DaqMxDataType: uint32
-      RawBufferIndex: uint32
-      RawByteOffsetWithinStride: uint32
-      SampleFormatBitmap: uint32
-      ScaleId: uint32 }
+    { DaqMxDataType: uint
+      RawBufferIndex: uint
+      RawByteOffsetWithinStride: uint
+      SampleFormatBitmap: uint
+      ScaleId: uint }
 
 type InterleavedPrimitiveRawDataBlock =
     { Start: uint64

@@ -41,11 +41,11 @@ module Segment =
     let readLeadIn (buffer: byte ReadOnlySpan byref) =
         let tag =
             Buffer.readUInt &buffer false
-            |> LanguagePrimitives.EnumOfValue<uint32, Tag>
+            |> LanguagePrimitives.EnumOfValue<uint, Tag>
 
         let tableOfContents =
             Buffer.readUInt &buffer false
-            |> LanguagePrimitives.EnumOfValue<uint32, TableOfContents>
+            |> LanguagePrimitives.EnumOfValue<uint, TableOfContents>
 
         let bigEndian =
             tableOfContents.HasFlag(TableOfContents.ContainsBigEndianData)
@@ -54,7 +54,7 @@ module Segment =
           TableOfContents = tableOfContents
           Version =
               Buffer.readUInt &buffer bigEndian
-              |> LanguagePrimitives.EnumOfValue<uint32, Version>
+              |> LanguagePrimitives.EnumOfValue<uint, Version>
           NextSegmentOffset = Buffer.readUInt64 &buffer bigEndian
           RawDataOffset = Buffer.readUInt64 &buffer bigEndian }
 

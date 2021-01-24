@@ -106,7 +106,7 @@ module Buffer =
         | 4u -> typeof<int64>
         | 5u -> typeof<uint8>
         | 6u -> typeof<uint16>
-        | 7u -> typeof<uint32>
+        | 7u -> typeof<uint>
         | 8u -> typeof<uint64>
         | 9u
         | 0x19u -> typeof<float32>
