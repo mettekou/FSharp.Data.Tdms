@@ -2,7 +2,6 @@ namespace FSharp.Data.Tdms
 
 open System
 open System.Buffers
-open System.Collections.Generic
 open System.IO
 open System.Numerics
 open System.Runtime.InteropServices
@@ -34,7 +33,7 @@ type LeadIn =
       RawDataOffset: uint64 }
 
 type Index =
-    { Objects: FSharp.Data.Tdms.Object List }
+    { Objects: FSharp.Data.Tdms.Object ResizeArray }
 
 module Segment =
 
@@ -117,9 +116,8 @@ module Segment =
         else
             failwithf "Property type not implemented: %A" propertyType
 
-    let createObject name (objects: _ List) bigEndian =
-        match Seq.cast objects
-              |> Seq.tryFind (fun object -> object.Name = name) with
+    let createObject name (objects: _ ResizeArray) bigEndian =
+        match Seq.tryFind (fun object -> object.Name = name) objects with
         | Some object -> object
         | None ->
             let object =

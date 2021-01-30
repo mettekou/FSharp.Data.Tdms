@@ -89,37 +89,31 @@ module Index =
 
 
     let tryPropertyValue<'t> name { Objects = objects } =
-        Seq.cast<Object> objects
+        objects
         |> Seq.tryFind (fun object -> object.Name = "/")
         |> Option.bind (fun object -> Seq.tryFind (fun (property: Property) -> property.Name = name) object.Properties)
         |> Option.bind (fun property -> Property.tryGet<'t> property)
 
     let unsafePropertyValue name { Objects = objects } =
-        Seq.cast<Object> objects
+        objects
         |> Seq.find (fun object -> object.Name = "/")
         |> (fun object -> Seq.find (fun (property: Property) -> property.Name = name) object.Properties)
         |> (fun property -> Property.tryGet<'t> property |> Option.get)
 
     let tryGroup groupName { Objects = objects } =
-        Seq.cast<Object> objects
-        |> Seq.tryFind (fun object -> object.Name = "/'" + groupName + "'")
+        Seq.tryFind (fun object -> object.Name = "/'" + groupName + "'") objects
 
     let unsafeGroup groupName { Objects = objects } =
-        Seq.cast<Object> objects
-        |> Seq.find (fun object -> object.Name = "/'" + groupName + "'")
+        Seq.find (fun object -> object.Name = "/'" + groupName + "'") objects
 
     let unsafeChannel groupName channelName { Objects = objects } =
-        Seq.cast<Object> objects
-        |> Seq.find (fun object -> object.Name = "/'" + groupName + "'/'" + channelName + "'")
+        Seq.find (fun object -> object.Name = "/'" + groupName + "'/'" + channelName + "'") objects
 
     let tryChannel groupName channelName { Objects = objects } =
-        Seq.cast<Object> objects
-        |> Seq.tryFind (fun object -> object.Name = "/'" + groupName + "'/'" + channelName + "'")
+        Seq.tryFind (fun object -> object.Name = "/'" + groupName + "'/'" + channelName + "'") objects
 
     let tryRawData<'t> path groupName channelName index =
-        let channel = tryChannel groupName channelName index
-
-        channel
+        tryChannel groupName channelName index
         |> Option.bind (Object.tryRawData<'t> path)
 
     let tryRawDataAsync<'t> path groupName channelName index =
