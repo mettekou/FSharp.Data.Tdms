@@ -1,7 +1,6 @@
 namespace FSharp.Data.Tdms
 
 open System.Buffers
-open System.Collections.Generic
 open System.IO
 open System.Threading.Tasks
 open FSharp.Collections
@@ -11,7 +10,7 @@ open FSharp.Control.Tasks.NonAffine
 module Index =
 
     let readSegments fromIndex leadInBuffer (stream: Stream) indexStream =
-        let segmentedIndex = { Objects = List() }
+        let segmentedIndex = { Objects = ResizeArray() }
         let mutable offset = 0uL
 
         while stream.Position < stream.Length do
@@ -53,7 +52,7 @@ module Index =
 
     let readSegmentsAsync fromIndex leadInBuffer (stream: Stream) indexStream =
         task {
-            let segmentedIndex = { Objects = List() }
+            let segmentedIndex = { Objects = ResizeArray() }
             let mutable offset = 0uL
 
             while stream.Position < stream.Length do
