@@ -200,35 +200,37 @@ module Segment =
         let chunkSize = Array.sum sizes
 
         if chunkSize > 0uL then
-            seq { chunkSize .. chunkSize .. (nextSegmentOffset - rawDataOffset) - chunkSize }
-            |> Seq.iter
-                (fun chunkOffset ->
-                    rawDataBlocksToUpdate
-                    |> Array.iter
-                        (fun rawDataBlocks ->
-                            match rawDataBlocks with
-                            | PrimitiveRawDataBlocks (_, primitiveRawDataBlockArray) ->
-                                Seq.tryLast primitiveRawDataBlockArray
-                                |> Option.iter
-                                    (function
-                                    | DecimatedPrimitiveRawDataBlock (start, count) ->
-                                        primitiveRawDataBlockArray.Add(
-                                            DecimatedPrimitiveRawDataBlock(start + chunkOffset, count)
-                                        )
-                                    | InterleavedPrimitiveRawDataBlock ({ Start = start } as block) ->
-                                        primitiveRawDataBlockArray.Add(
+            let chunkOffsets =
+                [ chunkSize .. chunkSize .. (nextSegmentOffset - rawDataOffset) - chunkSize ]
 
-                                            InterleavedPrimitiveRawDataBlock
-                                                { block with
-                                                      Start = start + chunkOffset }
-                                        )
-
-                                    )
-                            | StringRawDataBlocks stringRawDataBlockArray ->
-                                Seq.tryLast stringRawDataBlockArray
-                                |> Option.iter
-                                    (fun (start, count, bytes) ->
-                                        stringRawDataBlockArray.Add(start + chunkOffset, count, bytes))))
+            for rawDataBlocks in rawDataBlocksToUpdate do
+                match rawDataBlocks with
+                | PrimitiveRawDataBlocks (_, primitiveRawDataBlockArray) ->
+                    Seq.tryLast primitiveRawDataBlockArray
+                    |> Option.iter
+                        (function
+                        | DecimatedPrimitiveRawDataBlock (start, count) ->
+                            primitiveRawDataBlockArray.AddRange(
+                                List.map
+                                    (fun chunkOffset -> DecimatedPrimitiveRawDataBlock(start + chunkOffset, count))
+                                    chunkOffsets
+                            )
+                        | InterleavedPrimitiveRawDataBlock ({ Start = start } as block) ->
+                            primitiveRawDataBlockArray.AddRange(
+                                List.map
+                                    (fun chunkOffset ->
+                                        InterleavedPrimitiveRawDataBlock
+                                            { block with
+                                                  Start = start + chunkOffset })
+                                    chunkOffsets
+                            ))
+                | StringRawDataBlocks stringRawDataBlockArray ->
+                    Seq.tryLast stringRawDataBlockArray
+                    |> Option.iter
+                        (fun (start, count, bytes) ->
+                            stringRawDataBlockArray.AddRange(
+                                List.map (fun chunkOffset -> start + chunkOffset, count, bytes) chunkOffsets
+                            ))
 
         if interleaved then
             Array.iter
