@@ -129,7 +129,7 @@ module Segment =
             objects.Add object
             object
 
-    let readMetaData { Objects = objects } rawDataOffset (buffer: _ byref) bigEndian interleaved =
+    let readMetaData { Objects = objects } rawDataOffset nextSegmentOffset (buffer: _ byref) bigEndian interleaved =
         let objectCount = Buffer.readInt &buffer bigEndian
         let newOrUpdatedObjects = Array.zeroCreate objectCount
         let mutable rawDataPosition = rawDataOffset
@@ -162,6 +162,66 @@ module Segment =
                 | None -> object.Properties.Add property
                 | Some index -> object.Properties.[index] <- property
 
+        let sizes, rawDataBlocksToUpdate =
+            Array.choose
+                (fun { RawDataBlocks = rawDataBlocks } ->
+                    Option.bind
+                        (fun rawDataBlocks' ->
+                            match rawDataBlocks' with
+                            | PrimitiveRawDataBlocks (ty, primitiveRawDataBlockArray) ->
+                                Seq.tryPick
+                                    (function
+                                    | DecimatedPrimitiveRawDataBlock (start, count) ->
+                                        if start >= rawDataOffset
+                                           && start < nextSegmentOffset then
+                                            Some(uint64 (Marshal.SizeOf ty) * count, rawDataBlocks')
+                                        else
+                                            None
+                                    | InterleavedPrimitiveRawDataBlock { Start = start; Count = count } ->
+                                        if start >= rawDataOffset
+                                           && start < nextSegmentOffset then
+                                            Some(uint64 (Marshal.SizeOf ty) * count, rawDataBlocks')
+                                        else
+                                            None)
+                                    primitiveRawDataBlockArray
+                            | StringRawDataBlocks stringRawDataBlockArray ->
+                                Seq.tryPick
+                                    (fun (start, _, bytes) ->
+                                        if start >= rawDataOffset
+                                           && start < nextSegmentOffset then
+                                            Some(bytes, rawDataBlocks')
+                                        else
+                                            None)
+                                    stringRawDataBlockArray)
+                        rawDataBlocks)
+                newOrUpdatedObjects
+            |> Array.unzip
+
+        let chunkSize = Array.sum sizes
+        let mutable chunkOffset = rawDataOffset + chunkSize
+
+        while chunkOffset < nextSegmentOffset do
+            for rawDataBlocks in rawDataBlocksToUpdate do
+                match rawDataBlocks with
+                | PrimitiveRawDataBlocks (_, primitiveRawDataBlockArray) ->
+                    Seq.tryLast primitiveRawDataBlockArray
+                    |> Option.iter
+                        (function
+                        | DecimatedPrimitiveRawDataBlock (start, count) ->
+                            primitiveRawDataBlockArray.Add(DecimatedPrimitiveRawDataBlock(start + chunkOffset, count))
+                        | InterleavedPrimitiveRawDataBlock ({ Start = start } as block) ->
+                            primitiveRawDataBlockArray.Add(
+                                InterleavedPrimitiveRawDataBlock
+                                    { block with
+                                          Start = start + chunkOffset }
+                            ))
+                | StringRawDataBlocks stringRawDataBlockArray ->
+                    Seq.tryLast stringRawDataBlockArray
+                    |> Option.iter
+                        (fun (start, count, bytes) -> stringRawDataBlockArray.Add(start + chunkOffset, count, bytes))
+
+            chunkOffset <- chunkOffset + chunkSize
+
         if interleaved then
             Array.iter
                 (fun { RawDataBlocks = rawDataBlocks } ->
@@ -179,21 +239,16 @@ module Segment =
                                     - uint64 (Marshal.SizeOf ty)))
                 newOrUpdatedObjects
 
-    let readMetaDataMemory index (rawDataOffset: uint64) (memory: byte ReadOnlyMemory) bigEndian interleaved =
+    let readMetaDataMemory
+        index
+        (rawDataOffset: uint64)
+        nextSegmentOffset
+        (memory: byte ReadOnlyMemory)
+        bigEndian
+        interleaved
+        =
         let mutable buffer = memory.Span
-        readMetaData index rawDataOffset &buffer bigEndian interleaved
-
-    (*let chunkDataSize indices = List.sum (List.map (fun i ->
-      match i with
-        | None -> 0uL
-        | Some(OtherType(ty, d, c)) -> uint64 (Type.size ty |> Option.defaultValue 1u) * uint64 d * c
-        | Some(String(_, _, _, s)) -> s
-    ) indices)
-
-  let countChunks indices nextSegmentOffset rawDataOffset =
-    let totalDataSize = nextSegmentOffset - rawDataOffset
-    let chunkSize = chunkDataSize indices
-    if chunkSize = 0uL then 0uL else totalDataSize / chunkSize*)
+        readMetaData index rawDataOffset nextSegmentOffset &buffer bigEndian interleaved
 
     let tdsh = [| 0x54uy; 0x44uy; 0x53uy; 0x68uy |]
 
@@ -224,11 +279,12 @@ module Segment =
             readMetaData
                 index
                 (metaDataStart + leadIn.RawDataOffset)
+                (metaDataStart + leadIn.NextSegmentOffset)
                 &span
                 (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
                 (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsInterleavedData))
 
-            ArrayPool<byte>.Shared.Return(buffer, false)
+            ArrayPool<byte>.Shared.Return (buffer, false)
 
         let nextSegmentOffset = metaDataStart + leadIn.NextSegmentOffset
 
@@ -250,6 +306,7 @@ module Segment =
 
             let leadIn = readLeadInMemory leadInMemory
             let metaDataStart = offset + 28uL
+            let nextSegmentOffset = metaDataStart + leadIn.NextSegmentOffset
 
             if leadIn.TableOfContents.HasFlag(TableOfContents.ContainsMetaData) then
                 let remainingLength = int leadIn.RawDataOffset
@@ -266,13 +323,12 @@ module Segment =
                 readMetaDataMemory
                     index
                     (metaDataStart + leadIn.RawDataOffset)
+                    nextSegmentOffset
                     memory
                     (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
                     (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
 
-                ArrayPool<byte>.Shared.Return(buffer, false)
-
-            let nextSegmentOffset = metaDataStart + leadIn.NextSegmentOffset
+                ArrayPool<byte>.Shared.Return (buffer, false)
 
             if not fromIndex then
                 stream.Seek(int64 nextSegmentOffset, SeekOrigin.Begin)
