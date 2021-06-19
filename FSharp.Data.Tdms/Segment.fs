@@ -198,9 +198,11 @@ module Segment =
             |> Array.unzip
 
         let chunkSize = Array.sum sizes
-        let mutable chunkOffset = rawDataOffset + chunkSize
 
-        while chunkOffset < nextSegmentOffset do
+        if chunkSize > 0uL then
+            let chunkOffsets =
+                [ chunkSize .. chunkSize .. (nextSegmentOffset - rawDataOffset) - chunkSize ]
+
             for rawDataBlocks in rawDataBlocksToUpdate do
                 match rawDataBlocks with
                 | PrimitiveRawDataBlocks (_, primitiveRawDataBlockArray) ->
@@ -208,19 +210,27 @@ module Segment =
                     |> Option.iter
                         (function
                         | DecimatedPrimitiveRawDataBlock (start, count) ->
-                            primitiveRawDataBlockArray.Add(DecimatedPrimitiveRawDataBlock(start + chunkOffset, count))
+                            primitiveRawDataBlockArray.AddRange(
+                                List.map
+                                    (fun chunkOffset -> DecimatedPrimitiveRawDataBlock(start + chunkOffset, count))
+                                    chunkOffsets
+                            )
                         | InterleavedPrimitiveRawDataBlock ({ Start = start } as block) ->
-                            primitiveRawDataBlockArray.Add(
-                                InterleavedPrimitiveRawDataBlock
-                                    { block with
-                                          Start = start + chunkOffset }
+                            primitiveRawDataBlockArray.AddRange(
+                                List.map
+                                    (fun chunkOffset ->
+                                        InterleavedPrimitiveRawDataBlock
+                                            { block with
+                                                  Start = start + chunkOffset })
+                                    chunkOffsets
                             ))
                 | StringRawDataBlocks stringRawDataBlockArray ->
                     Seq.tryLast stringRawDataBlockArray
                     |> Option.iter
-                        (fun (start, count, bytes) -> stringRawDataBlockArray.Add(start + chunkOffset, count, bytes))
-
-            chunkOffset <- chunkOffset + chunkSize
+                        (fun (start, count, bytes) ->
+                            stringRawDataBlockArray.AddRange(
+                                List.map (fun chunkOffset -> start + chunkOffset, count, bytes) chunkOffsets
+                            ))
 
         if interleaved then
             Array.iter
