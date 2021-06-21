@@ -32,9 +32,6 @@ type LeadIn =
       NextSegmentOffset: uint64
       RawDataOffset: uint64 }
 
-type Index =
-    { Objects: FSharp.Data.Tdms.Object ResizeArray }
-
 module Segment =
 
     let readLeadIn (buffer: byte ReadOnlySpan byref) =
@@ -56,10 +53,6 @@ module Segment =
               |> LanguagePrimitives.EnumOfValue<uint, Version>
           NextSegmentOffset = Buffer.readUInt64 &buffer bigEndian
           RawDataOffset = Buffer.readUInt64 &buffer bigEndian }
-
-    let readLeadInMemory (memory: byte ReadOnlyMemory) =
-        let mutable buffer = memory.Span
-        readLeadIn &buffer
 
     let readPropertyValue (buffer: byte ReadOnlySpan byref) bigEndian propertyType =
         if propertyType = typeof<unit> then
@@ -129,9 +122,10 @@ module Segment =
             objects.Add object
             object
 
-    let readMetaData { Objects = objects } rawDataOffset nextSegmentOffset (buffer: _ byref) bigEndian interleaved =
+    let readMetaData objects rawDataOffset nextSegmentOffset (buffer: _ byref) bigEndian interleaved =
         let objectCount = Buffer.readInt &buffer bigEndian
         let newOrUpdatedObjects = Array.zeroCreate objectCount
+        let objectsWithRawData = ResizeArray()
         let mutable rawDataPosition = rawDataOffset
 
         for i = 0 to objectCount - 1 do
@@ -140,9 +134,13 @@ module Segment =
 
             newOrUpdatedObjects.[i] <- object
 
-            rawDataPosition <-
-                rawDataPosition
-                + Object.readRawDataIndex object rawDataPosition &buffer bigEndian interleaved
+            let rawDataSkip =
+                Object.readRawDataIndex object rawDataPosition &buffer bigEndian interleaved
+
+            rawDataPosition <- rawDataPosition + rawDataSkip
+
+            if rawDataSkip > 0uL then
+                objectsWithRawData.Add object
 
             let propertyCount = Buffer.readUInt &buffer bigEndian |> int
 
@@ -163,38 +161,25 @@ module Segment =
                 | Some index -> object.Properties.[index] <- property
 
         let sizes, rawDataBlocksToUpdate =
-            Array.choose
-                (fun { RawDataBlocks = rawDataBlocks } ->
+            Seq.choose
+                (fun ({ RawDataBlocks = rawDataBlocks }: FSharp.Data.Tdms.Object) ->
                     Option.bind
                         (fun rawDataBlocks' ->
                             match rawDataBlocks' with
                             | PrimitiveRawDataBlocks (ty, primitiveRawDataBlockArray) ->
-                                Seq.tryPick
+                                Seq.tryLast primitiveRawDataBlockArray
+                                |> Option.map
                                     (function
                                     | DecimatedPrimitiveRawDataBlock (start, count) ->
-                                        if start >= rawDataOffset
-                                           && start < nextSegmentOffset then
-                                            Some(uint64 (Marshal.SizeOf ty) * count, rawDataBlocks')
-                                        else
-                                            None
+                                        uint64 (Marshal.SizeOf ty) * count, rawDataBlocks'
                                     | InterleavedPrimitiveRawDataBlock { Start = start; Count = count } ->
-                                        if start >= rawDataOffset
-                                           && start < nextSegmentOffset then
-                                            Some(uint64 (Marshal.SizeOf ty) * count, rawDataBlocks')
-                                        else
-                                            None)
-                                    primitiveRawDataBlockArray
+                                        uint64 (Marshal.SizeOf ty) * count, rawDataBlocks')
                             | StringRawDataBlocks stringRawDataBlockArray ->
-                                Seq.tryPick
-                                    (fun (start, _, bytes) ->
-                                        if start >= rawDataOffset
-                                           && start < nextSegmentOffset then
-                                            Some(bytes, rawDataBlocks')
-                                        else
-                                            None)
-                                    stringRawDataBlockArray)
+                                Seq.tryLast stringRawDataBlockArray
+                                |> Option.map (fun (_, _, bytes) -> bytes, rawDataBlocks'))
                         rawDataBlocks)
-                newOrUpdatedObjects
+                objectsWithRawData
+            |> Seq.toArray
             |> Array.unzip
 
         let chunkSize = Array.sum sizes
@@ -234,7 +219,7 @@ module Segment =
 
         if interleaved then
             Array.iter
-                (fun { RawDataBlocks = rawDataBlocks } ->
+                (fun ({ RawDataBlocks = rawDataBlocks }: FSharp.Data.Tdms.Object) ->
                     match rawDataBlocks with
                     | None -> ()
                     | Some (StringRawDataBlocks _) -> ()
@@ -249,100 +234,8 @@ module Segment =
                                     - uint64 (Marshal.SizeOf ty)))
                 newOrUpdatedObjects
 
-    let readMetaDataMemory
-        index
-        (rawDataOffset: uint64)
-        nextSegmentOffset
-        (memory: byte ReadOnlyMemory)
-        bigEndian
-        interleaved
-        =
-        let mutable buffer = memory.Span
-        readMetaData index rawDataOffset nextSegmentOffset &buffer bigEndian interleaved
-
-    let tdsh = [| 0x54uy; 0x44uy; 0x53uy; 0x68uy |]
-
-    let read offset fromIndex index leadInBuffer (stream: Stream) (indexStream: Stream) =
-        stream.Read(leadInBuffer, 0, 28) |> ignore
-        let mutable leadInSpan = ReadOnlySpan leadInBuffer
-        let writeIndex = isNull indexStream |> not
-
-        if writeIndex then
-            indexStream.Write(tdsh, 0, 4)
-            indexStream.Write(leadInBuffer, 4, 24)
-
-        let leadIn = readLeadIn &leadInSpan
-        let metaDataStart = offset + 28uL
-
-        if leadIn.TableOfContents.HasFlag(TableOfContents.ContainsMetaData) then
-            let remainingLength = int leadIn.RawDataOffset
-
-            let buffer =
-                ArrayPool<byte>.Shared.Rent remainingLength
-
-            stream.Read(buffer, 0, remainingLength) |> ignore
-            let mutable span = ReadOnlySpan buffer
-
-            if writeIndex then
-                indexStream.Write(buffer, 0, remainingLength)
-
-            readMetaData
-                index
-                (metaDataStart + leadIn.RawDataOffset)
-                (metaDataStart + leadIn.NextSegmentOffset)
-                &span
-                (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
-                (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsInterleavedData))
-
-            ArrayPool<byte>.Shared.Return (buffer, false)
-
-        let nextSegmentOffset = metaDataStart + leadIn.NextSegmentOffset
-
-        if not fromIndex then
-            stream.Seek(int64 nextSegmentOffset, SeekOrigin.Begin)
-            |> ignore
-
-        nextSegmentOffset
-
-    let readAsync offset fromIndex index leadInBuffer (stream: Stream) (indexStream: Stream) =
-        task {
-            let! _ = stream.ReadAsync(leadInBuffer, 0, 28)
-            let mutable leadInMemory = ReadOnlyMemory leadInBuffer
-            let writeIndex = isNull indexStream |> not
-
-            if writeIndex then
-                do! indexStream.WriteAsync(tdsh, 0, 4)
-                do! indexStream.WriteAsync(leadInBuffer, 4, 24)
-
-            let leadIn = readLeadInMemory leadInMemory
-            let metaDataStart = offset + 28uL
-            let nextSegmentOffset = metaDataStart + leadIn.NextSegmentOffset
-
-            if leadIn.TableOfContents.HasFlag(TableOfContents.ContainsMetaData) then
-                let remainingLength = int leadIn.RawDataOffset
-
-                let buffer =
-                    ArrayPool<byte>.Shared.Rent remainingLength
-
-                let! _ = stream.ReadAsync(buffer, 0, remainingLength)
-                let mutable memory = ReadOnlyMemory buffer
-
-                if writeIndex then
-                    do! indexStream.WriteAsync(buffer, 0, remainingLength)
-
-                readMetaDataMemory
-                    index
-                    (metaDataStart + leadIn.RawDataOffset)
-                    nextSegmentOffset
-                    memory
-                    (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
-                    (leadIn.TableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
-
-                ArrayPool<byte>.Shared.Return (buffer, false)
-
-            if not fromIndex then
-                stream.Seek(int64 nextSegmentOffset, SeekOrigin.Begin)
-                |> ignore
-
-            return nextSegmentOffset
-        }
+    let tdsh =
+        ReadOnlyMemory [| 0x54uy
+                          0x44uy
+                          0x53uy
+                          0x68uy |]

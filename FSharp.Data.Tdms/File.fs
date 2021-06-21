@@ -1,54 +1,267 @@
 namespace FSharp.Data.Tdms
 
+open System
+open System.Buffers
+open System.IO
 open System.Runtime.InteropServices
+open System.Text.RegularExpressions
+open System.Threading.Tasks
+open FSharp.Collections
+
 open FSharp.Control.Tasks.NonAffine
 
-type File = {
-    Path: string
-    Index : Index
-}
+type File =
+    { Path: string
+      Properties: Property seq
+      Groups: FSharp.Data.Tdms.Group seq }
 
 module File =
 
-    open System.IO
+    [<Literal>]
+    let LeadInLength = 28
+
+    let ofObjects path objects =
+        let groups =
+            objects
+            |> Seq.choose
+                (fun ({ Name = groupName
+                        Properties = properties }: FSharp.Data.Tdms.Object) ->
+                    if Regex.IsMatch(groupName, @"^\/'[^\/']+'$") then
+                        Some
+                            { Name = groupName.Substring(2, String.length groupName - 3)
+                              Properties = properties
+                              Channels =
+                                  objects
+                                  |> Seq.filter
+                                      (fun { Name = channelName } ->
+                                          channelName.StartsWith groupName
+                                          && String.length channelName > String.length groupName)
+                                  |> Seq.map (Object.toChannel path) }
+                    else
+                        None)
+
+        { Path = path
+          Properties =
+              objects
+              |> Seq.tryFind (fun ({ Name = name }: FSharp.Data.Tdms.Object) -> name = "/")
+              |> Option.map (fun { Properties = properties } -> properties)
+              |> Option.toList
+              |> Seq.concat
+          Groups = groups }
 
     /// <summary>
-    /// Opens a TDMS file, reads the index from it, and closes it.
+    /// Opens a <see cref="File" />, reads the index from it, and closes it.
     /// </summary>
-    /// <param name="path"> The path to the TDMS file to read.</param>
+    /// <param name="path">the path to the <see cref="File" /> to read.</param>
+    /// <param name="writeIndex">Whether to write the TDMS index file if it does not exist.</param>
     let read path writeIndex =
-        let indexPath = Path.ChangeExtension(path, ".tdms_index")
-        let indexExists = File.Exists(indexPath)
-        { Path = path; Index = Index.read indexExists (not indexExists && writeIndex) (if indexExists then indexPath else path) indexPath }
-    
+        let indexPath =
+            Path.ChangeExtension(path, ".tdms_index")
+
+        let indexExists = File.Exists indexPath
+
+        use stream =
+            new FileStream(
+                (if indexExists then indexPath else path),
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                65_536,
+                if indexExists then
+                    FileOptions.SequentialScan
+                else
+                    FileOptions.None
+            )
+
+        use indexStream =
+            if not indexExists && writeIndex then
+                new FileStream(indexPath, FileMode.Create, FileAccess.Write, FileShare.None, 8_192, false)
+            else
+                null
+
+        let mutable buffer = ArrayPool<byte>.Shared.Rent LeadInLength
+        let objects = ResizeArray()
+        let mutable offset = 0uL
+
+        while stream.Position < stream.Length do
+            stream.Read(buffer.AsSpan().Slice(0, LeadInLength))
+            |> ignore
+
+            if not indexExists && writeIndex then
+                indexStream.Write(Segment.tdsh.Span)
+                indexStream.Write((ReadOnlySpan buffer).Slice(4, 24))
+
+            let mutable leadInSpan = ReadOnlySpan buffer
+
+            let { TableOfContents = tableOfContents
+                  NextSegmentOffset = nextSegmentOffset
+                  RawDataOffset = rawDataOffset } =
+                Segment.readLeadIn &leadInSpan
+
+            let metaDataStart = offset + 28uL
+
+            if tableOfContents.HasFlag(TableOfContents.ContainsMetaData) then
+                let remainingLength = int rawDataOffset
+
+                if remainingLength > buffer.Length then
+                    ArrayPool<byte>.Shared.Return (buffer, false)
+                    buffer <- ArrayPool<byte>.Shared.Rent remainingLength
+
+                stream.Read(buffer, 0, remainingLength) |> ignore
+
+                if writeIndex then
+                    indexStream.Write(buffer, 0, remainingLength)
+
+                let mutable metaDataSpan = ReadOnlySpan buffer
+
+                Segment.readMetaData
+                    objects
+                    (metaDataStart + rawDataOffset)
+                    (metaDataStart + nextSegmentOffset)
+                    &metaDataSpan
+                    (tableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
+                    (tableOfContents.HasFlag(TableOfContents.ContainsInterleavedData))
+
+            offset <- metaDataStart + nextSegmentOffset
+
+            stream.Seek(int64 offset, SeekOrigin.Begin)
+            |> ignore
+
+        ArrayPool<byte>.Shared.Return (buffer, false)
+        ofObjects path objects
+
+    /// <summary>
+    /// Asynchronously opens a <see cref="File" />, reads the index from it, and closes it.
+    /// </summary>
+    /// <param name="path">the path to the <see cref="File" /> to read.</param>
+    /// <param name="writeIndex">Whether to write the index file if it does not exist.</param>
     let readAsync path writeIndex =
-        let indexPath = Path.ChangeExtension(path, ".tdms_index")
-        let indexExists = File.Exists(indexPath)
         task {
-            let! index = Index.readAsync indexExists (not indexExists && writeIndex) (if indexExists then indexPath else path) indexPath
-            return { Path = path; Index = index }
+            let indexPath =
+                Path.ChangeExtension(path, ".tdms_index")
+
+            let indexExists = File.Exists(indexPath)
+
+            use stream =
+                new FileStream(
+                    (if indexExists then indexPath else path),
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read,
+                    65_536,
+                    if indexExists then
+                        FileOptions.SequentialScan
+                        ||| FileOptions.Asynchronous
+                    else
+                        FileOptions.Asynchronous
+                )
+
+            use indexStream =
+                if not indexExists && writeIndex then
+                    new FileStream(indexPath, FileMode.Create, FileAccess.Write, FileShare.None, 1_048_576, true)
+                else
+                    null
+
+            let mutable buffer = ArrayPool<byte>.Shared.Rent LeadInLength
+            let objects = ResizeArray()
+            let mutable offset = 0uL
+
+            while stream.Position < stream.Length do
+                let! _ = stream.ReadAsync((Memory buffer).Slice(0, LeadInLength))
+
+                if not indexExists && writeIndex then
+                    do! indexStream.WriteAsync(Segment.tdsh)
+                    do! indexStream.WriteAsync((ReadOnlyMemory buffer).Slice(4, 24))
+
+                let mutable leadInSpan = ReadOnlySpan buffer
+
+                let { TableOfContents = tableOfContents
+                      NextSegmentOffset = nextSegmentOffset
+                      RawDataOffset = rawDataOffset } =
+                    Segment.readLeadIn &leadInSpan
+
+                let metaDataStart = offset + 28uL
+
+                if tableOfContents.HasFlag(TableOfContents.ContainsMetaData) then
+                    let remainingLength = int rawDataOffset
+
+                    if remainingLength > buffer.Length then
+                        ArrayPool<byte>.Shared.Return (buffer, false)
+                        buffer <- ArrayPool<byte>.Shared.Rent remainingLength
+
+                    let! _ = stream.ReadAsync((Memory buffer).Slice(0, remainingLength))
+
+                    if writeIndex then
+                        do! indexStream.WriteAsync((ReadOnlyMemory buffer).Slice(0, remainingLength))
+
+                    let mutable metaDataSpan = ReadOnlySpan buffer
+
+                    Segment.readMetaData
+                        objects
+                        (metaDataStart + rawDataOffset)
+                        (metaDataStart + nextSegmentOffset)
+                        &metaDataSpan
+                        (tableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
+                        (tableOfContents.HasFlag(TableOfContents.ContainsInterleavedData))
+
+                offset <- metaDataStart + nextSegmentOffset
+
+                stream.Seek(int64 offset, SeekOrigin.Begin)
+                |> ignore
+
+            ArrayPool<byte>.Shared.Return (buffer, false)
+            return ofObjects path objects
         }
 
-    /// <summary>
-    /// Tries to get the raw data for a <c>channel</c> within a <c>group</c>.
-    /// </summary>
-    let tryRawData<'T> group channel { Path = path; Index = index } =
-        Index.tryRawData<'T> path group channel index
+    let tryGetPropertyValue<'t> propertyName ({ Properties = properties }: File) =
+        properties
+        |> Seq.tryFind (fun { Name = propertyName' } -> propertyName' = propertyName)
+        |> Option.bind Property.tryGet<'t>
 
-    let tryRawDataAsync<'t> group channel { Path = path; Index = index } =
-        Index.tryRawDataAsync<'t> path group channel index
+    let getPropertyValue<'t> propertyName =
+        tryGetPropertyValue<'t> propertyName >> Option.get
 
-    /// <summary>
-    /// Gets the value of a property associated with the file.
-    /// </summary>
-    let tryPropertyValue<'T> propertyName { Index = index } =
-        Index.tryPropertyValue<'T> propertyName index
+    /// <summary>Returns all groups within the <see cref="File" />.</summary>
+    let getGroups { Groups = groups } = groups
     
-    let tryGroup groupName { Index = index } =
-        Index.tryGroup groupName index
+    /// <summary>Returns the <see cref="Group" /> with the given name within the <see cref="File" />. Returns None if it does not exist.</summary>
+    /// <param name="groupName">the name of the <see cref="Group" /> to find.</param>
+    let tryFindGroup groupName =
+        getGroups >> Seq.tryFind (fun { Name = groupName' } -> groupName' = groupName)
 
-    let tryChannel groupName channelName { Index = index } =
-        Index.tryChannel groupName channelName index
+    /// <summary>Returns the <see cref="Group" /> with the given name within the <see cref="File" />.</summary>
+    /// <param name="groupName">the name of the <see cref="Group" /> to find.</param>
+    let findGroup groupName = tryFindGroup groupName >> Option.get
+    
+    /// <summary>Returns the <see cref="Channel" /> with the given name within the <see cref="Group" /> with the given name within the <see cref="File" />. Returns None if it does not exist.</summary>
+    /// <param name="groupName">the name of the <see cref="Group" /> to find the <see cref="Channel" /> in.</param>
+    /// <param name="channelName">the name of the <see cref="Channel" /> to find.</param>
+    let tryFindChannel groupName channelName =
+        tryFindGroup groupName
+        >> Option.bind (Group.tryFindChannel channelName)
+
+    /// <summary>Returns the <see cref="Channel" /> with the given name within the <see cref="Group" /> with the given name.</summary>
+    /// <param name="groupName">the name of the <see cref="Group" /> to find the <see cref="Channel" /> in.</param>
+    /// <param name="channelName">the name of the <see cref="Channel" /> to find.</param>
+    let findChannel groupName channelName =
+        tryFindChannel groupName channelName >> Option.get
+
+    /// <summary>Returns the raw data for a <see cref="Channel" />. Returns None if the <see cref="Channel" /> does not exist, if it does not have any raw data, or if its raw data is not of the given type.</summary>
+    /// <param name="groupName">the name of the <see cref="Group" /> the <see cref="Channel" /> is in.</param>
+    /// <param name="channelName">the name of the <see cref="Channel" /> to get raw data for.</param>
+    /// <param name="file">the TDMS file to read from.</param>
+    let tryGetRawData<'t> groupName channelName file =
+        tryFindChannel groupName channelName file
+        |> Option.bind Channel.tryGetRawData<'t>
+
+    /// <summary>Asynchronously returns the raw data for a <see cref="Channel" />. Returns None if the <see cref="Channel" /> does not exist, if it does not have any raw data, or if its raw data is not of the given type.</summary>
+    /// <param name="groupName">the name of the <see cref="Group" /> the <see cref="Channel" /> is in.</param>
+    /// <param name="channelName">the name of the <see cref="Channel" /> to get raw data for.</param>
+    /// <param name="file">the TDMS file to read from.</param>
+    let tryGetRawDataAsync<'t> groupName channelName file =
+        tryFindChannel groupName channelName file
+        |> Option.map Channel.tryRawDataAsync<'t>
+        |> Option.defaultValue (Task.FromResult None)
 
 type File with
 
@@ -57,31 +270,31 @@ type File with
     /// </summary>
     /// <param name="path"> The path to the TDMS file to read.</param>
     /// <param name="writeIndex"> Whether to write the TDMS index file.</param>
-    static member Read (path, writeIndex) = File.read path writeIndex
+    static member Read(path, writeIndex) = File.read path writeIndex
 
     /// <summary>
     /// Asynchronously opens a TDMS file, reads the index from it, and closes it.
     /// </summary>
     /// <param name="path"> The path to the TDMS file to read.</param>
     /// <param name="writeIndex"> Whether to write the TDMS index file.</param>
-    static member ReadAsync (path, writeIndex) = File.readAsync path writeIndex
+    static member ReadAsync(path, writeIndex) = File.readAsync path writeIndex
 
     /// <summary>
     /// Tries to get the raw data for the given channel, belonging to the given group in the given TDMS file.
     /// </summary>
-    member file.TryGetRawData<'T> (groupName, channelName, [<Out>] rawData : byref<'T []>) =
-        match File.tryRawData<'T> groupName channelName file with
-            | None -> false
-            | Some rd ->
-                rawData <- rd
-                true
+    member file.TryGetRawData<'T>(groupName, channelName, [<Out>] rawData: byref<'T []>) =
+        match File.tryGetRawData<'T> groupName channelName file with
+        | None -> false
+        | Some rd ->
+            rawData <- rd
+            true
 
     /// <summary>
     /// Asynchronously gets the raw data for the given channel, belonging to the given group in the given TDMS file.
     /// </summary>
-    member file.GetRawDataAsync<'t> (groupName, channelName) =
+    member file.GetRawDataAsync<'t>(groupName, channelName) =
         task {
-            match! File.tryRawDataAsync<'t> groupName channelName file with
+            match! File.tryGetRawDataAsync<'t> groupName channelName file with
             | None -> return null
             | Some rd -> return rd
         }
@@ -89,29 +302,30 @@ type File with
     /// <summary>
     /// Tries to get a property value for the given TDMS file.
     /// </summary>
-    member file.TryGetPropertyValue<'T> (propertyName, [<Out>] propertyValue : byref<'T>) =
-        match File.tryPropertyValue<'T> propertyName file with
-            | None -> false
-            | Some pv ->
-                propertyValue <- pv
-                true
+    member file.TryGetPropertyValue<'T>(propertyName, [<Out>] propertyValue: byref<'T>) =
+        match File.tryGetPropertyValue<'T> propertyName file with
+        | None -> false
+        | Some pv ->
+            propertyValue <- pv
+            true
 
     /// <summary>
     /// Tries to get a property value for the given group in the given TDMS file.
     /// </summary>
-    member file.TryGetPropertyValue<'T> (propertyName, groupName, [<Out>] propertyValue : byref<'T>) =
-        match Index.tryGroup groupName file.Index |> Option.bind (Object.tryPropertyValue<'T> propertyName) with
-            | None -> false
-            | Some pv ->
-                propertyValue <- pv
-                true
+    member file.TryGetPropertyValue<'T>(propertyName, groupName, [<Out>] propertyValue: byref<'T>) =
+        match File.tryFindGroup groupName file
+              |> Option.bind (Group.tryGetPropertyValue<'T> propertyName) with
+        | None -> false
+        | Some pv ->
+            propertyValue <- pv
+            true
 
     /// <summary>
     /// Tries to get a property value for the given channel, belonging to the given group in the given TDMS file.
     /// </summary>
-    member file.TryGetPropertyValue<'T> (propertyName, groupName, channelName, [<Out>] propertyValue : byref<'T>) =
-        match Index.tryPropertyValue<'T> ("/" + groupName + "/" + channelName) file.Index with
-            | None -> false
-            | Some pv ->
-                propertyValue <- pv
-                true
+    member file.TryGetPropertyValue<'T>(propertyName, groupName, channelName, [<Out>] propertyValue: byref<'T>) =
+        match File.tryGetPropertyValue<'T> ("/" + groupName + "/" + channelName) file with
+        | None -> false
+        | Some pv ->
+            propertyValue <- pv
+            true

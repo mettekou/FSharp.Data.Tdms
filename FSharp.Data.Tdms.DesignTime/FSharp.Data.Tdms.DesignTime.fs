@@ -52,26 +52,20 @@ type TdmsProvider(config: TypeProviderConfig) as this =
         fileField.SetFieldAttributes(FieldAttributes.Private)
         root.AddMember(fileField)
         root.AddMember(constructor)
-        let objects = file.Index.Objects.ToArray()
+        let properties = file.Properties
+        let groups = file.Groups
 
-        Array.tryFind (fun object -> object.Name = "/") objects
-        |> Option.iter
-            (fun { Properties = properties } ->
-                for { Name = n; Type = pty } in properties do
-                    ProvidedProperty(
-                        n,
-                        pty,
-                        getterCode =
-                            fun args ->
-                                <@@ Index.unsafePropertyValue
-                                        n
-                                        (%%(Expr.FieldGet(args.[0], fileField)): File)
-                                            .Index @@>
-                    )
-                    |> root.AddMember)
+        for { Name = n; Type = pty } in properties do
+            ProvidedProperty(
+                n,
+                pty,
+                getterCode =
+                    fun args -> <@@ File.getPropertyValue n (%%(Expr.FieldGet(args.[0], fileField)): File) @@>
+            )
+            |> root.AddMember
 
-        for g in Array.filter (fun object -> Array.length (object.Name.Split('/')) = 2) objects do
-            let gn = g.Name.Split('/').[1].Trim(''')
+        for g in groups do
+            let gn = g.Name
 
             let group =
                 ProvidedTypeDefinition(asm, ns, gn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
@@ -104,10 +98,7 @@ type TdmsProvider(config: TypeProviderConfig) as this =
                     fun args ->
                         Expr.NewObject(
                             groupConstructor,
-                            [ (<@@ Index.unsafeGroup
-                                       gn
-                                       (%%(Expr.FieldGet(args.[0], fileField)): File)
-                                           .Index @@>)
+                            [ (<@@ File.findGroup gn (%%(Expr.FieldGet(args.[0], fileField)): File) @@>)
                               <@@ (%%(Expr.FieldGet(args.[0], fileField)): File) @@> ]
                         )
             )
@@ -119,87 +110,81 @@ type TdmsProvider(config: TypeProviderConfig) as this =
                     propertyType = gpty,
                     getterCode =
                         fun args ->
-                            <@@ Object.unsafePropertyValue n (%%(Expr.FieldGet(args.[0], groupField)): Object) @@>
+                            <@@ Group.getPropertyValue n (%%(Expr.FieldGet(args.[0], groupField)): Group) @@>
                 )
                 |> group.AddMember
+                
+                let channels = g.Channels
 
-            for c in Array.filter
-                         (fun object ->
-                             Array.length (object.Name.Split('/')) = 3
-                             && object.Name.Split('/').[1] = g.Name.Split('/').[1])
-                         objects do
-                let cn = c.Name.Split('/').[2].Trim(''')
+                for c in channels do
+                    let cn = c.Name
 
-                let channel =
-                    ProvidedTypeDefinition(asm, ns, cn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
+                    let channel =
+                        ProvidedTypeDefinition(asm, ns, cn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
 
-                group.AddMember(channel)
+                    group.AddMember(channel)
 
-                let channelField =
-                    ProvidedField("_channel", typeof<Object>)
+                    let channelField =
+                        ProvidedField("_channel", typeof<Object>)
 
-                let channelPathField = ProvidedField("_file", typeof<File>)
+                    let channelPathField = ProvidedField("_file", typeof<File>)
 
-                let channelConstructor =
-                    ProvidedConstructor(
-                        [ ProvidedParameter("channel", typeof<Object>)
-                          ProvidedParameter("file", typeof<File>) ],
-                        invokeCode =
-                            fun args ->
-                                Expr.Sequential(
-                                    Expr.FieldSet(args.[0], channelField, <@@ (%%args.[1]: Object) @@>),
-                                    Expr.FieldSet(args.[0], channelPathField, <@@ (%%args.[2]: File) @@>)
-                                )
-                    )
+                    let channelConstructor =
+                        ProvidedConstructor(
+                            [ ProvidedParameter("channel", typeof<Object>)
+                              ProvidedParameter("file", typeof<File>) ],
+                            invokeCode =
+                                fun args ->
+                                    Expr.Sequential(
+                                        Expr.FieldSet(args.[0], channelField, <@@ (%%args.[1]: Object) @@>),
+                                        Expr.FieldSet(args.[0], channelPathField, <@@ (%%args.[2]: File) @@>)
+                                    )
+                        )
 
-                channel.AddMember(channelField)
-                channel.AddMember(channelPathField)
-                channel.AddMember(channelConstructor)
+                    channel.AddMember(channelField)
+                    channel.AddMember(channelPathField)
+                    channel.AddMember(channelConstructor)
 
-                ProvidedProperty(
-                    propertyName = cn,
-                    propertyType = channel.AsType(),
-                    getterCode =
-                        fun args ->
-                            Expr.NewObject(
-                                channelConstructor,
-                                [ (<@@ Index.unsafeChannel
-                                           gn
-                                           cn
-                                           (%%(Expr.FieldGet(args.[0], groupPathField)): File)
-                                               .Index @@>)
-                                  (<@@ (%%(Expr.FieldGet(args.[0], groupPathField)): File) @@>) ]
-                            )
-                )
-                |> group.AddMember
-
-                for { Name = cpn; Type = cpty } in c.Properties do
                     ProvidedProperty(
-                        propertyName = cpn,
-                        propertyType = cpty,
+                        propertyName = cn,
+                        propertyType = channel.AsType(),
                         getterCode =
                             fun args ->
-                                <@@ Object.unsafePropertyValue cpn (%%(Expr.FieldGet(args.[0], channelField)): Object) @@>
+                                Expr.NewObject(
+                                    channelConstructor,
+                                    [ (<@@ File.findChannel gn cn (%%(Expr.FieldGet(args.[0], groupPathField)): File) @@>)
+                                      (<@@ (%%(Expr.FieldGet(args.[0], groupPathField)): File) @@>) ]
+                                )
                     )
-                    |> channel.AddMember
+                    |> group.AddMember
 
-                let ty' =
-                    match c.RawDataBlocks with
-                    | Some (StringRawDataBlocks _) -> Some typeof<string>
-                    | Some (PrimitiveRawDataBlocks (ty', _)) -> Some ty'
-                    | None -> None
-
-                Option.iter
-                    (fun (ty: Type) ->
+                    for { Name = cpn; Type = cpty } in c.Properties do
                         ProvidedProperty(
-                            propertyName = "Data",
-                            propertyType = ty.MakeArrayType(),
+                            propertyName = cpn,
+                            propertyType = cpty,
                             getterCode =
                                 fun args ->
-                                    <@@ rawData ty gn cn (%%(Expr.FieldGet(args.[0], channelPathField)): File) @@>
+                                    <@@ Channel.getPropertyValue cpn (%%(Expr.FieldGet(args.[0], channelField)): Channel) @@>
                         )
-                        |> channel.AddMember)
-                    ty'
+                        |> channel.AddMember
+
+                    let ty' =
+                        match c.RawDataBlocks with
+                        | Some (StringRawDataBlocks _) -> Some typeof<string>
+                        | Some (PrimitiveRawDataBlocks (ty', _)) -> Some ty'
+                        | None -> None
+
+                    Option.iter
+                        (fun (ty: Type) ->
+                            ProvidedProperty(
+                                propertyName = "Data",
+                                propertyType = ty.MakeArrayType(),
+                                getterCode =
+                                    fun args ->
+                                        <@@ rawData ty gn cn (%%(Expr.FieldGet(args.[0], channelPathField)): File) @@>
+                            )
+                            |> channel.AddMember)
+                        ty'
 
         asm.AddTypes([ root ])
         root

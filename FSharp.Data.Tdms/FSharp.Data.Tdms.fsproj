@@ -6,6 +6,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/mettekou/FSharp.Data.Tdms.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <NuspecFile>FSharp.Data.Tdms.nuspec</NuspecFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Extended.fs" />
@@ -14,15 +16,16 @@
     <Compile Include="Buffer.fs" />
     <Compile Include="RawDataBlock.fs" />
     <Compile Include="Reader.fs" />
+    <Compile Include="Channel.fs" />
+    <Compile Include="Group.fs" />
     <Compile Include="Object.fs" />
     <Compile Include="Segment.fs" />
-    <Compile Include="Index.fs" />
     <Compile Include="File.fs" />
     <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="5.0.0" />
-    <PackageReference Include="MinVer" Version="2.4.0">
+    <PackageReference Include="MinVer" Version="2.5.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

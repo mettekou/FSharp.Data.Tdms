@@ -13,9 +13,10 @@
     <Compile Include="../FSharp.Data.Tdms/Buffer.fs" />
     <Compile Include="../FSharp.Data.Tdms/RawDataBlock.fs" />
     <Compile Include="../FSharp.Data.Tdms/Reader.fs" />
+    <Compile Include="../FSharp.Data.Tdms/Channel.fs" />
+    <Compile Include="../FSharp.Data.Tdms/Group.fs" />
     <Compile Include="../FSharp.Data.Tdms/Object.fs" />
     <Compile Include="../FSharp.Data.Tdms/Segment.fs" />
-    <Compile Include="../FSharp.Data.Tdms/Index.fs" />
     <Compile Include="../FSharp.Data.Tdms/File.fs" />
     <Compile Include="../FSharp.Data.Tdms/FSharp.Data.Tdms.Runtime.fs" />
     <Compile Include="FSharp.Data.Tdms.DesignTime.fs" />
