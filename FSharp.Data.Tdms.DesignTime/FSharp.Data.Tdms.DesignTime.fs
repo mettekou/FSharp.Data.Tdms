@@ -14,8 +14,7 @@ open FSharp.Data.Tdms
 [<TypeProvider>]
 type TdmsProvider(config: TypeProviderConfig) as this =
     inherit TypeProviderForNamespaces(config,
-                                      assemblyReplacementMap = [ ("FSharp.Data.Tdms.DesignTime", "FSharp.Data.Tdms") ],
-                                      addDefaultProbingLocation = true)
+                                      assemblyReplacementMap = [ ("FSharp.Data.Tdms.DesignTime", "FSharp.Data.Tdms") ])
 
     let ns = "FSharp.Data"
     let execAsm = Assembly.GetExecutingAssembly()
@@ -59,8 +58,7 @@ type TdmsProvider(config: TypeProviderConfig) as this =
             ProvidedProperty(
                 n,
                 pty,
-                getterCode =
-                    fun args -> <@@ File.getPropertyValue n (%%(Expr.FieldGet(args.[0], fileField)): File) @@>
+                getterCode = fun args -> <@@ File.getPropertyValue n (%%(Expr.FieldGet(args.[0], fileField)): File) @@>
             )
             |> root.AddMember
 
@@ -109,18 +107,24 @@ type TdmsProvider(config: TypeProviderConfig) as this =
                     propertyName = n,
                     propertyType = gpty,
                     getterCode =
-                        fun args ->
-                            <@@ Group.getPropertyValue n (%%(Expr.FieldGet(args.[0], groupField)): Group) @@>
+                        fun args -> <@@ Group.getPropertyValue n (%%(Expr.FieldGet(args.[0], groupField)): Group) @@>
                 )
                 |> group.AddMember
-                
+
                 let channels = g.Channels
 
                 for c in channels do
                     let cn = c.Name
 
                     let channel =
-                        ProvidedTypeDefinition(asm, ns, cn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
+                        ProvidedTypeDefinition(
+                            asm,
+                            ns,
+                            cn,
+                            Some typeof<obj>,
+                            isErased = false,
+                            hideObjectMethods = true
+                        )
 
                     group.AddMember(channel)
 
@@ -164,7 +168,9 @@ type TdmsProvider(config: TypeProviderConfig) as this =
                             propertyType = cpty,
                             getterCode =
                                 fun args ->
-                                    <@@ Channel.getPropertyValue cpn (%%(Expr.FieldGet(args.[0], channelField)): Channel) @@>
+                                    <@@ Channel.getPropertyValue
+                                            cpn
+                                            (%%(Expr.FieldGet(args.[0], channelField)): Channel) @@>
                         )
                         |> channel.AddMember
 

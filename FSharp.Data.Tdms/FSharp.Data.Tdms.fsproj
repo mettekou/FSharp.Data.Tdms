@@ -1,13 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <OutputType>Library</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <Authors>Dylan Meysmans</Authors>
     <Description>TDMS 2.0 support for F# and C#</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/mettekou/FSharp.Data.Tdms.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <NuspecFile>FSharp.Data.Tdms.nuspec</NuspecFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <FSharpToolsDirectory>typeproviders</FSharpToolsDirectory>
+    <PackagePath>typeproviders</PackagePath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Extended.fs" />
@@ -30,6 +32,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Ply" Version="0.3.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FSharp.Data.Tdms.DesignTime\FSharp.Data.Tdms.DesignTime.fsproj">
+      <IsFSharpDesignTimeProvider>true</IsFSharpDesignTimeProvider>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <MinVerTagPrefix>v</MinVerTagPrefix>
