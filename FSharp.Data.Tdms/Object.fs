@@ -161,6 +161,8 @@ module Object =
         ({ Name = groupName
            Properties = groupProperties }: Object)
         =
-        { Name = groupName.Split('/', StringSplitOptions.RemoveEmptyEntries).[0]
+        { Name =
+              groupName.Split('/', StringSplitOptions.RemoveEmptyEntries).[0]
+                  .Trim('\'')
           Properties = groupProperties
           Channels = Seq.map (toChannel filePath) channels }
