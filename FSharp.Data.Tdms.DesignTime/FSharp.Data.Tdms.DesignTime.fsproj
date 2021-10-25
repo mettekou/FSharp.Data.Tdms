@@ -8,8 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="ProvidedTypes.fsi" />
-    <Compile Include="ProvidedTypes.fs" />
     <Compile Include="../FSharp.Data.Tdms/Extended.fs">
       <Link>Extended.fs</Link>
     </Compile>
@@ -51,6 +49,7 @@
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Include="FSharp.TypeProviders.SDK" Version="7.0.3" /> 
     <PackageReference Include="Ply" Version="0.3.1" />
   </ItemGroup>
 
