@@ -5,7 +5,6 @@ open System.IO
 open System.Numerics
 open System.Runtime.InteropServices
 open System.Threading.Tasks
-open FSharp.Control.Tasks.NonAffine
 
 type Object =
     { Name: string

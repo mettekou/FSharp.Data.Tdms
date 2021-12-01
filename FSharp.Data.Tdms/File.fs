@@ -8,8 +8,6 @@ open System.Text.RegularExpressions
 open System.Threading.Tasks
 open FSharp.Collections
 
-open FSharp.Control.Tasks.NonAffine
-
 type File =
     { Path: string
       Properties: Property seq

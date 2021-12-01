@@ -6,7 +6,6 @@ open System.IO
 open System.Numerics
 open System.Runtime.InteropServices
 open System.Text
-open FSharp.Control.Tasks.NonAffine
 
 module Reader =
 

@@ -1,4 +1,4 @@
-﻿namespace FSharp.Data.Tdms
+namespace FSharp.Data.Tdms
 
 type Group =
     { Name: string

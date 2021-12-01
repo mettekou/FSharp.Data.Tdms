@@ -1,11 +1,9 @@
-﻿namespace FSharp.Data.Tdms
+namespace FSharp.Data.Tdms
 
 open System
 open System.IO
 open System.Numerics
 open System.Threading.Tasks
-
-open FSharp.Control.Tasks.NonAffine
 
 type Channel = {
     Name: string

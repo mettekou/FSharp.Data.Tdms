@@ -5,7 +5,6 @@ open System.Buffers
 open System.IO
 open System.Numerics
 open System.Runtime.InteropServices
-open FSharp.Control.Tasks.NonAffine
 
 type Tag =
     | Tdsm = 1834173524u
