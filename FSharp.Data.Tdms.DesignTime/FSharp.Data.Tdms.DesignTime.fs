@@ -69,17 +69,17 @@ type TdmsProvider(config: TypeProviderConfig) as this =
                 ProvidedTypeDefinition(asm, ns, gn, Some typeof<obj>, isErased = false, hideObjectMethods = true)
 
             root.AddMember(group)
-            let groupField = ProvidedField("_group", typeof<Object>)
+            let groupField = ProvidedField("_group", typeof<Group>)
             let groupPathField = ProvidedField("_file", typeof<File>)
 
             let groupConstructor =
                 ProvidedConstructor(
-                    [ ProvidedParameter("group", typeof<Object>)
+                    [ ProvidedParameter("group", typeof<Group>)
                       ProvidedParameter("file", typeof<File>) ],
                     invokeCode =
                         fun args ->
                             Expr.Sequential(
-                                Expr.FieldSet(args.[0], groupField, <@@ (%%args.[1]: Object) @@>),
+                                Expr.FieldSet(args.[0], groupField, <@@ (%%args.[1]: Group) @@>),
                                 Expr.FieldSet(args.[0], groupPathField, <@@ (%%args.[2]: File) @@>)
                             )
                 )
@@ -129,18 +129,18 @@ type TdmsProvider(config: TypeProviderConfig) as this =
                     group.AddMember(channel)
 
                     let channelField =
-                        ProvidedField("_channel", typeof<Object>)
+                        ProvidedField("_channel", typeof<Channel>)
 
                     let channelPathField = ProvidedField("_file", typeof<File>)
 
                     let channelConstructor =
                         ProvidedConstructor(
-                            [ ProvidedParameter("channel", typeof<Object>)
+                            [ ProvidedParameter("channel", typeof<Channel>)
                               ProvidedParameter("file", typeof<File>) ],
                             invokeCode =
                                 fun args ->
                                     Expr.Sequential(
-                                        Expr.FieldSet(args.[0], channelField, <@@ (%%args.[1]: Object) @@>),
+                                        Expr.FieldSet(args.[0], channelField, <@@ (%%args.[1]: Channel) @@>),
                                         Expr.FieldSet(args.[0], channelPathField, <@@ (%%args.[2]: File) @@>)
                                     )
                         )
