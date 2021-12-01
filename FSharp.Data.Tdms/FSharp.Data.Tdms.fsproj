@@ -8,8 +8,6 @@
     <RepositoryUrl>https://github.com/mettekou/FSharp.Data.Tdms.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <FSharpToolsDirectory>typeproviders</FSharpToolsDirectory>
-    <PackagePath>typeproviders</PackagePath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Extended.fs" />
@@ -33,8 +31,11 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="$(OutputPath)\FSharp.Data.Tdms.DesignTime.dll">
+      <Pack>true</Pack>
+      <PackagePath>lib\$(TargetFramework)</PackagePath>
+    </Content>
     <ProjectReference Include="..\FSharp.Data.Tdms.DesignTime\FSharp.Data.Tdms.DesignTime.fsproj">
-      <IsFSharpDesignTimeProvider>true</IsFSharpDesignTimeProvider>
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
   </ItemGroup>
