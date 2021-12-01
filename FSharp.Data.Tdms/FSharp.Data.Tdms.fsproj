@@ -31,7 +31,11 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(OutputPath)\FSharp.Data.Tdms.DesignTime.dll">
+    <Content Include="$(OutputPath)\publish\FSharp.Data.Tdms.DesignTime.dll">
+      <Pack>true</Pack>
+      <PackagePath>lib\$(TargetFramework)</PackagePath>
+    </Content>
+    <Content Include="$(OutputPath)\publish\FSharp.TypeProviders.SDK.dll">
       <Pack>true</Pack>
       <PackagePath>lib\$(TargetFramework)</PackagePath>
     </Content>
