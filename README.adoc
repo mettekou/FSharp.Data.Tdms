@@ -1,7 +1,7 @@
 = `FSharp.Data.Tdms` image:https://buildstats.info/nuget/FSharp.Data.Tdms?includePreReleases=true[link=https://www.nuget.org/packages/FSharp.Data.Tdms]
 :toc:
 
-`FSharp.Data.Tdms` provides support for TDMS 2.0 files[[the-ni-tdms-file-format]]<<#the-ni-tdms-file-format-entry,^[1]^>> from F# and C# on .NET 5.0.
+`FSharp.Data.Tdms` provides support for TDMS 2.0 files[[the-ni-tdms-file-format]]<<#the-ni-tdms-file-format-entry,^[1]^>> from F# and C# on .NET 6.0.
 From F# it allows you to access these in a type-safe manner through a generative https://docs.microsoft.com/en-us/dotnet/fsharp/tutorials/type-providers/[type provider], while plain old functions and methods are available to both F# and C#.
 `FSharp.Data.Tdms` reads raw channel data from TDMS 2.0 files as arrays.
 
@@ -55,7 +55,6 @@ These functions have asynchronous equivalents:
 
 [source,fsharp]
 ----
-#r "nuget: Ply"
 #r "nuget: FSharp.Data.Tdms"
 
 open FSharp.Control.Tasks.NonAffine
