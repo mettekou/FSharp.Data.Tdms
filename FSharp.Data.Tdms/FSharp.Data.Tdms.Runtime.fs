@@ -4,6 +4,8 @@ namespace FSharp.Data
 // type DataSource(filename:string) =
 //     member this.FileName = filename
 
+open FSharp.Core.CompilerServices
+
 open FSharp.Data.Tdms
 
 module Helpers =
@@ -20,3 +22,6 @@ module Helpers =
 
         let concrete = generic.MakeGenericMethod [| ty |]
         concrete.Invoke(null, [| group; channel; index |])
+
+[<assembly:TypeProviderAssembly("FSharp.Data.Tdms.DesignTime")>]
+do()

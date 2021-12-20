@@ -208,5 +208,4 @@ type TdmsProvider(config: TypeProviderConfig) as this =
 
     do this.AddNamespace(ns, [ providerType ])
 
-[<TypeProviderAssembly>]
 do ()
