@@ -290,6 +290,7 @@ module Reader =
         strings
 
     let readPrimitiveRawDataAsync<'t when 't: struct and 't: (new: unit -> 't) and 't :> ValueType>
+        ct
         (stream: Stream)
         (segments: PrimitiveRawDataBlock seq)
         bigEndian
@@ -315,7 +316,7 @@ module Reader =
                     stream.Seek(int64 start, SeekOrigin.Begin)
                     |> ignore
 
-                    let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
+                    let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size), ct)
 
                     position <- position + int length
                 | InterleavedPrimitiveRawDataBlock { Start = start
@@ -325,7 +326,7 @@ module Reader =
                     |> ignore
 
                     for _ = 0 to int count - 1 do
-                        let! _ = stream.ReadAsync(memory.Slice(position * size, size))
+                        let! _ = stream.ReadAsync(memory.Slice(position * size, size), ct)
 
                         stream.Seek(int64 skip, SeekOrigin.Current)
                         |> ignore
@@ -339,9 +340,9 @@ module Reader =
             return data
         }
 
-    let readFloat80RawDataAsync (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
+    let readFloat80RawDataAsync ct (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
         if not bigEndian then
-            readPrimitiveRawDataAsync<float80> stream segments false
+            readPrimitiveRawDataAsync<float80> ct stream segments false
         else
             task {
                 let mutable position = 0
@@ -365,7 +366,7 @@ module Reader =
                         stream.Seek(int64 start, SeekOrigin.Begin)
                         |> ignore
 
-                        let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
+                        let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size), ct)
 
                         position <- position + int length
                     | InterleavedPrimitiveRawDataBlock { Start = start
@@ -375,7 +376,7 @@ module Reader =
                         |> ignore
 
                         for _ = 0 to int count - 1 do
-                            let! _ = stream.ReadAsync(memory.Slice(position * size, size))
+                            let! _ = stream.ReadAsync(memory.Slice(position * size, size), ct)
 
                             stream.Seek(int64 skip, SeekOrigin.Current)
                             |> ignore
@@ -390,9 +391,9 @@ module Reader =
                 return data
             }
 
-    let readComplexRawDataAsync (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
+    let readComplexRawDataAsync ct (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
         if not bigEndian then
-            readPrimitiveRawDataAsync<Complex> stream segments false
+            readPrimitiveRawDataAsync<Complex> ct stream segments false
         else
             let mutable position = 0
             let size = sizeof<Complex>
@@ -415,7 +416,7 @@ module Reader =
                         stream.Seek(int64 start, SeekOrigin.Begin)
                         |> ignore
 
-                        let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
+                        let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size), ct)
 
                         position <- position + int length
                     | InterleavedPrimitiveRawDataBlock { Start = start
@@ -425,7 +426,7 @@ module Reader =
                         |> ignore
 
                         for _ = 0 to int count - 1 do
-                            let! _ = stream.ReadAsync(memory.Slice(position * size, size))
+                            let! _ = stream.ReadAsync(memory.Slice(position * size, size), ct)
 
                             stream.Seek(int64 skip, SeekOrigin.Current)
                             |> ignore
@@ -440,9 +441,9 @@ module Reader =
                 return data
             }
 
-    let readTimestampRawDataAsync (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
+    let readTimestampRawDataAsync ct (stream: Stream) (segments: PrimitiveRawDataBlock seq) bigEndian =
         if not bigEndian then
-            readPrimitiveRawDataAsync<Timestamp> stream segments false
+            readPrimitiveRawDataAsync<Timestamp> ct stream segments false
         else
             let mutable position = 0
             let size = sizeof<Timestamp>
@@ -465,7 +466,7 @@ module Reader =
                         stream.Seek(int64 start, SeekOrigin.Begin)
                         |> ignore
 
-                        let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size))
+                        let! _ = stream.ReadAsync(memory.Slice(position * size, int length * size), ct)
 
                         position <- position + int length
                     | InterleavedPrimitiveRawDataBlock { Start = start
@@ -475,7 +476,7 @@ module Reader =
                         |> ignore
 
                         for _ = 0 to int count - 1 do
-                            let! _ = stream.ReadAsync(memory.Slice(position * size, size))
+                            let! _ = stream.ReadAsync(memory.Slice(position * size, size), ct)
 
                             stream.Seek(int64 skip, SeekOrigin.Current)
                             |> ignore
@@ -487,7 +488,7 @@ module Reader =
                 return data
             }
 
-    let readStringRawDataAsync (stream: Stream) (segments: (uint64 * uint64 * uint64) seq) bigEndian =
+    let readStringRawDataAsync ct (stream: Stream) (segments: (uint64 * uint64 * uint64) seq) bigEndian =
         task {
             let offsets =
                 Seq.map (fun (_, length, _) -> length) segments
@@ -516,7 +517,7 @@ module Reader =
 
                 let offsetsByteMemory = cast<uint, uint8> offsetsMemory
 
-                let! _ = stream.ReadAsync(offsetsByteMemory)
+                let! _ = stream.ReadAsync(offsetsByteMemory, ct)
 
                 if bigEndian then
                     offsetsByteMemory.Span.Reverse()
@@ -524,7 +525,7 @@ module Reader =
 
                 let mutable dataMemory = data.AsMemory().Slice(0, int bytes)
 
-                let! _ = stream.ReadAsync(dataMemory)
+                let! _ = stream.ReadAsync(dataMemory, ct)
 
                 let mutable offset = 0
 

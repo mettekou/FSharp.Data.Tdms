@@ -3,6 +3,7 @@ namespace FSharp.Data.Tdms
 open System
 open System.IO
 open System.Numerics
+open System.Threading
 open System.Threading.Tasks
 
 type Channel = {
@@ -135,7 +136,8 @@ module Channel =
             else
                 None
 
-    let tryRawDataAsync<'t>
+    let tryGetRawDataCtAsync<'t>
+        ct
         { FilePath = path
           RawDataBlocks = rawDataBlocks
           BigEndian = bigEndian }
@@ -151,7 +153,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<bool> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<bool> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<sbyte> then
@@ -159,7 +161,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<sbyte> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<sbyte> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<int16> then
@@ -167,7 +169,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<int16> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<int16> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<int> then
@@ -175,7 +177,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<int> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<int> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<int64> then
@@ -183,7 +185,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<int64> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<int64> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<byte> then
@@ -191,7 +193,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<byte> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<byte> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<uint16> then
@@ -199,7 +201,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<uint16> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<uint16> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<uint> then
@@ -207,7 +209,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<uint> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<uint> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<uint64> then
@@ -215,7 +217,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<uint64> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<uint64> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<float32> then
@@ -223,7 +225,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<float32> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<float32> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<float> then
@@ -231,7 +233,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readPrimitiveRawDataAsync<float> fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readPrimitiveRawDataAsync<float> ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<float80> then
@@ -239,7 +241,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readFloat80RawDataAsync fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readFloat80RawDataAsync ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<Complex> then
@@ -247,7 +249,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readComplexRawDataAsync fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readComplexRawDataAsync ct fileStream rawDataBlockArray bigEndian
                         return box result |> tryUnbox<'t []>
                     }
                 else
@@ -258,7 +260,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readTimestampRawDataAsync fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readTimestampRawDataAsync ct fileStream rawDataBlockArray bigEndian
 
                         return
                             Array.map Timestamp.toDateTime result
@@ -270,7 +272,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readTimestampRawDataAsync fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readTimestampRawDataAsync ct fileStream rawDataBlockArray bigEndian
 
                         return
                             Array.map Timestamp.toDateTimeOffset result
@@ -282,7 +284,7 @@ module Channel =
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                        let! result = Reader.readTimestampRawDataAsync fileStream rawDataBlockArray bigEndian
+                        let! result = Reader.readTimestampRawDataAsync ct fileStream rawDataBlockArray bigEndian
 
                         return
                             Array.map Timestamp.toTimeSpan result
@@ -299,8 +301,10 @@ module Channel =
                     use fileStream =
                         new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
-                    let! result = Reader.readStringRawDataAsync fileStream stringRawDataBlockArray bigEndian
+                    let! result = Reader.readStringRawDataAsync ct fileStream stringRawDataBlockArray bigEndian
                     return result |> box |> tryUnbox<'t []>
                 }
             else
                 Task.FromResult None
+
+    let tryRawDataAsync<'t> = tryGetRawDataCtAsync<'t> CancellationToken.None

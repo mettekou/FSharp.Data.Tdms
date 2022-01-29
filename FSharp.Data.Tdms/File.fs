@@ -5,6 +5,7 @@ open System.Buffers
 open System.IO
 open System.Runtime.InteropServices
 open System.Text.RegularExpressions
+open System.Threading
 open System.Threading.Tasks
 open FSharp.Collections
 
@@ -128,12 +129,8 @@ module File =
         ArrayPool<byte>.Shared.Return (buffer, false)
         ofObjects path objects
 
-    /// <summary>
-    /// Asynchronously opens a <see cref="File" />, reads the index from it, and closes it.
-    /// </summary>
-    /// <param name="path">the path to the <see cref="File" /> to read.</param>
-    /// <param name="writeIndex">Whether to write the index file if it does not exist.</param>
-    let readAsync path writeIndex =
+
+    let readAsyncCt ct path writeIndex =
         task {
             let indexPath =
                 Path.ChangeExtension(path, ".tdms_index")
@@ -165,11 +162,11 @@ module File =
             let mutable offset = 0uL
 
             while stream.Position < stream.Length do
-                let! _ = stream.ReadAsync((Memory buffer).Slice(0, LeadInLength))
+                let! _ = stream.ReadAsync((Memory buffer).Slice(0, LeadInLength), ct)
 
                 if not indexExists && writeIndex then
-                    do! indexStream.WriteAsync(Segment.tdsh)
-                    do! indexStream.WriteAsync((ReadOnlyMemory buffer).Slice(4, 24))
+                    do! indexStream.WriteAsync(Segment.tdsh, ct)
+                    do! indexStream.WriteAsync((ReadOnlyMemory buffer).Slice(4, 24), ct)
 
                 let mutable leadInSpan = ReadOnlySpan buffer
 
@@ -187,10 +184,10 @@ module File =
                         ArrayPool<byte>.Shared.Return (buffer, false)
                         buffer <- ArrayPool<byte>.Shared.Rent remainingLength
 
-                    let! _ = stream.ReadAsync((Memory buffer).Slice(0, remainingLength))
+                    let! _ = stream.ReadAsync((Memory buffer).Slice(0, remainingLength), ct)
 
                     if writeIndex then
-                        do! indexStream.WriteAsync((ReadOnlyMemory buffer).Slice(0, remainingLength))
+                        do! indexStream.WriteAsync((ReadOnlyMemory buffer).Slice(0, remainingLength), ct)
 
                     let mutable metaDataSpan = ReadOnlySpan buffer
 
@@ -210,6 +207,13 @@ module File =
             ArrayPool<byte>.Shared.Return (buffer, false)
             return ofObjects path objects
         }
+
+    /// <summary>
+    /// Asynchronously opens a <see cref="File" />, reads the index from it, and closes it.
+    /// </summary>
+    /// <param name="path">the path to the <see cref="File" /> to read.</param>
+    /// <param name="writeIndex">Whether to write the index file if it does not exist.</param>
+    let readAsync = readAsyncCt CancellationToken.None
 
     let tryGetPropertyValue<'t> propertyName ({ Properties = properties }: File) =
         properties
