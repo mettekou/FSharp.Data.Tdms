@@ -309,7 +309,7 @@ module Reader =
 
         let memory = cast<'t, byte> (data.AsMemory())
 
-        task {
+        backgroundTask {
             for segment in segments do
                 match segment with
                 | DecimatedPrimitiveRawDataBlock (start, length) ->
@@ -344,7 +344,7 @@ module Reader =
         if not bigEndian then
             readPrimitiveRawDataAsync<float80> ct stream segments false
         else
-            task {
+            backgroundTask {
                 let mutable position = 0
                 let size = sizeof<float80>
 
@@ -409,7 +409,7 @@ module Reader =
 
             let memory = cast<Complex, byte> (data.AsMemory())
 
-            task {
+            backgroundTask {
                 for segment in segments do
                     match segment with
                     | DecimatedPrimitiveRawDataBlock (start, length) ->
@@ -459,7 +459,7 @@ module Reader =
 
             let memory = cast<Timestamp, byte> (data.AsMemory())
 
-            task {
+            backgroundTask {
                 for segment in segments do
                     match segment with
                     | DecimatedPrimitiveRawDataBlock (start, length) ->
@@ -489,7 +489,7 @@ module Reader =
             }
 
     let readStringRawDataAsync ct (stream: Stream) (segments: (uint64 * uint64 * uint64) seq) bigEndian =
-        task {
+        backgroundTask {
             let offsets =
                 Seq.map (fun (_, length, _) -> length) segments
                 |> Seq.max

@@ -149,7 +149,7 @@ module Channel =
 
             if ty = typeof<'t> then
                 if ty = typeof<bool> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -157,7 +157,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<sbyte> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -165,7 +165,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<int16> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -173,7 +173,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<int> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -181,7 +181,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<int64> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -189,7 +189,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<byte> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -197,7 +197,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<uint16> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -205,7 +205,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<uint> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -213,7 +213,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<uint64> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -221,7 +221,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<float32> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -229,7 +229,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<float> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -237,7 +237,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<float80> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -245,7 +245,7 @@ module Channel =
                         return box result |> tryUnbox<'t []>
                     }
                 else if ty = typeof<Complex> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -256,7 +256,7 @@ module Channel =
                     Task.FromResult None
             else if ty = typeof<Timestamp> then
                 if typeof<'t> = typeof<DateTime> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -268,7 +268,7 @@ module Channel =
                             |> tryUnbox<'t []>
                     }
                 else if typeof<'t> = typeof<DateTimeOffset> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -280,7 +280,7 @@ module Channel =
                             |> tryUnbox<'t []>
                     }
                 else if typeof<'t> = typeof<TimeSpan> then
-                    task {
+                    backgroundTask {
                         use fileStream =
                             new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 
@@ -297,7 +297,7 @@ module Channel =
                 Task.FromResult None
         | Some (StringRawDataBlocks stringRawDataBlockArray) ->
             if typeof<'t> = typeof<string> then
-                task {
+                backgroundTask {
                     use fileStream =
                         new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, FileOptions.Asynchronous)
 

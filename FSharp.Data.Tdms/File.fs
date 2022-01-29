@@ -131,7 +131,7 @@ module File =
 
 
     let readAsyncCt ct path writeIndex =
-        task {
+        backgroundTask {
             let indexPath =
                 Path.ChangeExtension(path, ".tdms_index")
 
@@ -297,7 +297,7 @@ type File with
     /// Asynchronously gets the raw data for the given channel, belonging to the given group in the given TDMS file.
     /// </summary>
     member file.GetRawDataAsync<'t>(groupName, channelName, [<Optional; DefaultParameterValue(CancellationToken())>] ct) =
-        task {
+        backgroundTask {
             match! File.tryGetRawDataAsyncCt<'t> ct groupName channelName file with
             | None -> return null
             | Some rd -> return rd
