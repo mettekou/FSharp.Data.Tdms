@@ -8,8 +8,6 @@
     <RepositoryUrl>https://github.com/mettekou/FSharp.Data.Tdms.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <FSharpToolsDirectory>typeproviders</FSharpToolsDirectory>
-    <PackagePath>typeproviders</PackagePath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Extended.fs" />
@@ -24,7 +22,6 @@
     <Compile Include="Segment.fs" />
     <Compile Include="File.fs" />
     <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
-    <Compile Include="Runtime.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="6.0.1" />
@@ -34,16 +31,16 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(OutputPath)\publish\FSharp.Data.Tdms.DesignTime.dll">
+    <Content Include="$(OutputPath)\FSharp.Data.Tdms.DesignTime.dll">
       <Pack>true</Pack>
       <PackagePath>lib\$(TargetFramework)</PackagePath>
     </Content>
-    <Content Include="$(OutputPath)\publish\FSharp.TypeProviders.SDK.dll">
+    <Content Include="$(OutputPath)\FSharp.TypeProviders.SDK.dll">
       <Pack>true</Pack>
       <PackagePath>lib\$(TargetFramework)</PackagePath>
     </Content>
     <ProjectReference Include="..\FSharp.Data.Tdms.DesignTime\FSharp.Data.Tdms.DesignTime.fsproj">
-      <IsFSharpDesignTimeProvider>true</IsFSharpDesignTimeProvider>
+      <IncludeAssets>buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
   </ItemGroup>

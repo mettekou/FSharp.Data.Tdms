@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <DefineConstants>IS_DESIGNTIME;$(DefineConstants)</DefineConstants>
+    <DefineConstants>IS_DESIGNTIME</DefineConstants>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
