@@ -136,7 +136,7 @@ module Channel =
             else
                 None
 
-    let tryGetRawDataCtAsync<'t>
+    let tryGetRawDataAsyncCt<'t>
         ct
         { FilePath = path
           RawDataBlocks = rawDataBlocks
@@ -307,4 +307,4 @@ module Channel =
             else
                 Task.FromResult None
 
-    let tryRawDataAsync<'t> = tryGetRawDataCtAsync<'t> CancellationToken.None
+    let tryRawDataAsync<'t> = tryGetRawDataAsyncCt<'t> CancellationToken.None

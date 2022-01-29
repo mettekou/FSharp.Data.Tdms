@@ -260,10 +260,12 @@ module File =
     /// <param name="groupName">the name of the <see cref="Group" /> the <see cref="Channel" /> is in.</param>
     /// <param name="channelName">the name of the <see cref="Channel" /> to get raw data for.</param>
     /// <param name="file">the TDMS file to read from.</param>
-    let tryGetRawDataAsync<'t> groupName channelName file =
+    let tryGetRawDataAsyncCt<'t> ct groupName channelName file =
         tryFindChannel groupName channelName file
-        |> Option.map Channel.tryRawDataAsync<'t>
+        |> Option.map (Channel.tryGetRawDataAsyncCt<'t> ct)
         |> Option.defaultValue (Task.FromResult None)
+
+    let tryGetRawDataAsync<'t> = tryGetRawDataAsyncCt<'t> CancellationToken.None
 
 type File with
 
@@ -279,7 +281,7 @@ type File with
     /// </summary>
     /// <param name="path"> The path to the TDMS file to read.</param>
     /// <param name="writeIndex"> Whether to write the TDMS index file.</param>
-    static member ReadAsync(path, writeIndex) = File.readAsync path writeIndex
+    static member ReadAsync(path, writeIndex, [<Optional; DefaultParameterValue(CancellationToken())>] ct) = File.readAsyncCt ct path writeIndex
 
     /// <summary>
     /// Tries to get the raw data for the given channel, belonging to the given group in the given TDMS file.
@@ -294,9 +296,9 @@ type File with
     /// <summary>
     /// Asynchronously gets the raw data for the given channel, belonging to the given group in the given TDMS file.
     /// </summary>
-    member file.GetRawDataAsync<'t>(groupName, channelName) =
+    member file.GetRawDataAsync<'t>(groupName, channelName, [<Optional; DefaultParameterValue(CancellationToken())>] ct) =
         task {
-            match! File.tryGetRawDataAsync<'t> groupName channelName file with
+            match! File.tryGetRawDataAsyncCt<'t> ct groupName channelName file with
             | None -> return null
             | Some rd -> return rd
         }
