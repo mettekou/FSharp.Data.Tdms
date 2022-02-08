@@ -24,11 +24,11 @@
     <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="6.0.1" />
     <PackageReference Include="MinVer" Version="2.5.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Update="FSharp.Core" Version="6.0.3" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="$(OutputPath)\FSharp.Data.Tdms.DesignTime.dll">
