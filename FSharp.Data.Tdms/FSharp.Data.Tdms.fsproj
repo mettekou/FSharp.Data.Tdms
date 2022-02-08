@@ -1,5 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
@@ -9,35 +8,43 @@
     <RepositoryUrl>https://github.com/mettekou/FSharp.Data.Tdms.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DefineConstants>IS_DESIGNTIME</DefineConstants>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <RootNamespace>FSharp.Data.Tdms.DesignTime</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
-    <Compile Include="FSharp.Data.Tdms.DesignTime.fs" />
+    <Compile Include="Extended.fs" />
+    <Compile Include="Timestamp.fs" />
+    <Compile Include="Property.fs" />
+    <Compile Include="Buffer.fs" />
+    <Compile Include="RawDataBlock.fs" />
+    <Compile Include="Reader.fs" />
+    <Compile Include="Channel.fs" />
+    <Compile Include="Group.fs" />
+    <Compile Include="Object.fs" />
+    <Compile Include="Segment.fs" />
+    <Compile Include="File.fs" />
+    <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="FSharp.TypeProviders.SDK" Version="7.0.3" />
     <PackageReference Include="MinVer" Version="2.5.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Update="FSharp.Core" Version="6.0.3" /> 
+    <PackageReference Update="FSharp.Core" Version="6.0.3" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\FSharp.Data.Tdms.Runtime\FSharp.Data.Tdms.Runtime.fsproj" />
+    <Content Include="$(OutputPath)\FSharp.Data.Tdms.DesignTime.dll">
+      <Pack>true</Pack>
+      <PackagePath>lib\$(TargetFramework)</PackagePath>
+    </Content>
+    <Content Include="$(OutputPath)\FSharp.TypeProviders.SDK.dll">
+      <Pack>true</Pack>
+      <PackagePath>lib\$(TargetFramework)</PackagePath>
+    </Content>
+    <ProjectReference Include="..\FSharp.Data.Tdms.DesignTime\FSharp.Data.Tdms.DesignTime.fsproj">
+      <IncludeAssets>buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
   </ItemGroup>
-  
   <PropertyGroup>
     <MinVerTagPrefix>v</MinVerTagPrefix>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="bin/$(Configuration)/$(TargetFramework)/FSharp.Core.dll" Pack="true" PackagePath="lib\$(TargetFramework)" />
-    <None Include="bin/$(Configuration)/$(TargetFramework)/FSharp.TypeProviders.SDK.dll" Pack="true" PackagePath="lib\$(TargetFramework)" />
-    <None Include="bin/$(Configuration)/$(TargetFramework)/FSharp.Data.Tdms.Runtime.dll" Pack="true" PackagePath="lib\$(TargetFramework)" />
-  </ItemGroup>
 </Project>

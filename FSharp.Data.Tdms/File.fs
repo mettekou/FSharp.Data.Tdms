@@ -225,17 +225,16 @@ module File =
 
     /// <summary>Returns all groups within the <see cref="File" />.</summary>
     let getGroups { Groups = groups } = groups
-
+    
     /// <summary>Returns the <see cref="Group" /> with the given name within the <see cref="File" />. Returns None if it does not exist.</summary>
     /// <param name="groupName">the name of the <see cref="Group" /> to find.</param>
     let tryFindGroup groupName =
-        getGroups
-        >> Seq.tryFind (fun { Name = groupName' } -> groupName' = groupName)
+        getGroups >> Seq.tryFind (fun { Name = groupName' } -> groupName' = groupName)
 
     /// <summary>Returns the <see cref="Group" /> with the given name within the <see cref="File" />.</summary>
     /// <param name="groupName">the name of the <see cref="Group" /> to find.</param>
     let findGroup groupName = tryFindGroup groupName >> Option.get
-
+    
     /// <summary>Returns the <see cref="Channel" /> with the given name within the <see cref="Group" /> with the given name within the <see cref="File" />. Returns None if it does not exist.</summary>
     /// <param name="groupName">the name of the <see cref="Group" /> to find the <see cref="Channel" /> in.</param>
     /// <param name="channelName">the name of the <see cref="Channel" /> to find.</param>
