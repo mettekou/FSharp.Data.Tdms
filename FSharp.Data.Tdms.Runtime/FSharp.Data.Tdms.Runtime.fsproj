@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <Authors>Dylan Meysmans</Authors>
+    <Description>TDMS 2.0 support for F# and C#</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/mettekou/FSharp.Data.Tdms.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>FSharp.Data.Tdms</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Extended.fs" />
+    <Compile Include="Timestamp.fs" />
+    <Compile Include="Property.fs" />
+    <Compile Include="Buffer.fs" />
+    <Compile Include="RawDataBlock.fs" />
+    <Compile Include="Reader.fs" />
+    <Compile Include="Channel.fs" />
+    <Compile Include="Group.fs" />
+    <Compile Include="Object.fs" />
+    <Compile Include="Segment.fs" />
+    <Compile Include="File.fs" />
+    <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="2.5.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Update="FSharp.Core" Version="6.0.3" />
+  </ItemGroup>
+  <PropertyGroup>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+  </PropertyGroup>
+</Project>
