@@ -32,5 +32,6 @@
   <ItemGroup>
     <None Include="bin/$(Configuration)/$(TargetFramework)/FSharp.Core.dll" Pack="true" PackagePath="lib\$(TargetFramework)" />
     <None Include="bin/$(Configuration)/$(TargetFramework)/FSharp.TypeProviders.SDK.dll" Pack="true" PackagePath="lib\$(TargetFramework)" />
+    <None Include="bin/$(Configuration)/$(TargetFramework)/FSharp.Data.Tdms.Runtime.dll" Pack="true" PackagePath="lib\$(TargetFramework)" />
   </ItemGroup>
 </Project>
