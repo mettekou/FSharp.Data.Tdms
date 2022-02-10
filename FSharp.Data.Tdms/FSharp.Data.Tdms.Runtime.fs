@@ -4,10 +4,6 @@
 
 namespace FSharp.Data
 
-// Put any runtime constructs here
-// type DataSource(filename:string) =
-//     member this.FileName = filename
-
 open FSharp.Data.Tdms
 
 module Helpers =
