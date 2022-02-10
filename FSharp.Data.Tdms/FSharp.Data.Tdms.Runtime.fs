@@ -1,3 +1,7 @@
+#if INTERACTIVE
+#load "../../src/ProvidedTypes.fsi" "../../src/ProvidedTypes.fs"
+#endif
+
 namespace FSharp.Data
 
 // Put any runtime constructs here

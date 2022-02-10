@@ -14,7 +14,8 @@ open FSharp.Data.Tdms
 [<TypeProvider>]
 type TdmsProvider(config: TypeProviderConfig) as this =
     inherit TypeProviderForNamespaces(config,
-                                      assemblyReplacementMap = [ ("FSharp.Data.Tdms.DesignTime", "FSharp.Data.Tdms") ])
+                                      assemblyReplacementMap = [ ("FSharp.Data.Tdms.DesignTime", "FSharp.Data.Tdms") ],
+                                      addDefaultProbingLocation = true)
 
     let ns = "FSharp.Data"
     let execAsm = Assembly.GetExecutingAssembly()
@@ -25,7 +26,7 @@ type TdmsProvider(config: TypeProviderConfig) as this =
         |> this.RegisterProbingFolder
 
     // check we contain a copy of runtime files, and are not referencing the runtime DLL
-    //do assert (typeof<FSharp.Data.DataSource>.Assembly.GetName().Name = execAsm.GetName().Name)
+    do assert (typeof<RawDataHelper>.Assembly.GetName().Name = execAsm.GetName().Name)
     let staticParameters =
         [ ProvidedStaticParameter("Sample", typeof<string>)
           ProvidedStaticParameter("WriteIndex", typeof<bool>) ]
