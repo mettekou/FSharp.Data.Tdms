@@ -13,9 +13,7 @@ open FSharp.Data.Tdms
 
 [<TypeProvider>]
 type TdmsProvider(config: TypeProviderConfig) as this =
-    inherit TypeProviderForNamespaces(config,
-                                      assemblyReplacementMap = [ ("FSharp.Data.Tdms.DesignTime", "FSharp.Data.Tdms") ],
-                                      addDefaultProbingLocation = true)
+    inherit TypeProviderForNamespaces(config)
 
     let ns = "FSharp.Data"
     let execAsm = Assembly.GetExecutingAssembly()
