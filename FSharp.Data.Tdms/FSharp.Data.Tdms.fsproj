@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <Authors>Dylan Meysmans</Authors>
     <Description>TDMS 2.0 support for F# and C#</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
