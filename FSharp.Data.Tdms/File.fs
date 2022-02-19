@@ -83,12 +83,12 @@ module File =
         let mutable offset = 0uL
 
         while stream.Position < stream.Length do
-            stream.Read(buffer.AsSpan().Slice(0, LeadInLength))
+            stream.Read(buffer, 0, LeadInLength)
             |> ignore
 
             if not indexExists && writeIndex then
-                indexStream.Write(Segment.tdsh.Span)
-                indexStream.Write((ReadOnlySpan buffer).Slice(4, 24))
+                indexStream.Write(Segment.tdsh, 0, 4)
+                indexStream.Write(buffer, 4, 24)
 
             let mutable leadInSpan = ReadOnlySpan buffer
 
@@ -162,11 +162,11 @@ module File =
             let mutable offset = 0uL
 
             while stream.Position < stream.Length do
-                let! _ = stream.ReadAsync((Memory buffer).Slice(0, LeadInLength), ct)
+                let! _ = stream.ReadAsync(buffer, 0, LeadInLength, ct)
 
                 if not indexExists && writeIndex then
-                    do! indexStream.WriteAsync(Segment.tdsh, ct)
-                    do! indexStream.WriteAsync((ReadOnlyMemory buffer).Slice(4, 24), ct)
+                    do! indexStream.WriteAsync(Segment.tdsh, 0, 4, ct)
+                    do! indexStream.WriteAsync(buffer, 4, 24, ct)
 
                 let mutable leadInSpan = ReadOnlySpan buffer
 
@@ -184,10 +184,10 @@ module File =
                         ArrayPool<byte>.Shared.Return (buffer, false)
                         buffer <- ArrayPool<byte>.Shared.Rent remainingLength
 
-                    let! _ = stream.ReadAsync((Memory buffer).Slice(0, remainingLength), ct)
+                    let! _ = stream.ReadAsync(buffer, 0, remainingLength, ct)
 
                     if writeIndex then
-                        do! indexStream.WriteAsync((ReadOnlyMemory buffer).Slice(0, remainingLength), ct)
+                        do! indexStream.WriteAsync(buffer, 0, remainingLength, ct)
 
                     let mutable metaDataSpan = ReadOnlySpan buffer
 
