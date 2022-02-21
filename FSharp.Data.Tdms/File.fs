@@ -108,7 +108,7 @@ module File =
 
                 stream.Read(buffer, 0, remainingLength) |> ignore
 
-                if writeIndex then
+                if not indexExists && writeIndex then
                     indexStream.Write(buffer, 0, remainingLength)
 
                 let mutable metaDataSpan = ReadOnlySpan buffer
@@ -123,8 +123,9 @@ module File =
 
             offset <- metaDataStart + nextSegmentOffset
 
-            stream.Seek(int64 offset, SeekOrigin.Begin)
-            |> ignore
+            if not indexExists then
+                stream.Seek(int64 offset, SeekOrigin.Begin)
+                |> ignore
 
         ArrayPool<byte>.Shared.Return (buffer, false)
         ofObjects path objects
@@ -200,9 +201,10 @@ module File =
                         (tableOfContents.HasFlag(TableOfContents.ContainsInterleavedData))
 
                 offset <- metaDataStart + nextSegmentOffset
-
-                stream.Seek(int64 offset, SeekOrigin.Begin)
-                |> ignore
+                
+                if not indexExists then
+                    stream.Seek(int64 offset, SeekOrigin.Begin)
+                    |> ignore
 
             ArrayPool<byte>.Shared.Return (buffer, false)
             return ofObjects path objects
