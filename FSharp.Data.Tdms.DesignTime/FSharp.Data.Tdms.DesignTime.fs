@@ -40,6 +40,14 @@ type TdmsProvider(config: TypeProviderConfig) as this =
 
         let fileField = ProvidedField("_file", typeof<File>)
 
+        let defaultConstructor =
+            ProvidedConstructor(
+                [],
+                invokeCode =
+                    fun args ->
+                        Expr.FieldSet(args.[0], fileField, <@@ File.read path writeIndex @@>)
+            )
+        
         let constructor =
             ProvidedConstructor(
                 [ ProvidedParameter("path", typeof<string>)
@@ -51,6 +59,7 @@ type TdmsProvider(config: TypeProviderConfig) as this =
 
         fileField.SetFieldAttributes(FieldAttributes.Private)
         root.AddMember(fileField)
+        root.AddMember defaultConstructor
         root.AddMember(constructor)
         let properties = file.Properties
         let groups = file.Groups
