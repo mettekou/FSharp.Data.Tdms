@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <DefineConstants>IS_DESIGNTIME</DefineConstants>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
@@ -23,9 +23,7 @@
     <Compile Include="../FSharp.Data.Tdms/RawDataBlock.fs">
       <Link>RawDataBlock.fs</Link>
     </Compile>
-    <Compile Include="../FSharp.Data.Tdms/Reader.fs">
-      <Link>Reader.fs</Link>
-    </Compile>
+    <Compile Include="Reader.fs" />
     <Compile Include="../FSharp.Data.Tdms/Channel.fs">
       <Link>Channel.fs</Link>
     </Compile>
@@ -53,7 +51,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Update="FSharp.Core" Version="6.0.3" /> 
+    <PackageReference Update="FSharp.Core" Version="6.0.3" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Include="System.Text.Encoding" Version="4.3.0" /> 
   </ItemGroup>
 
 </Project>

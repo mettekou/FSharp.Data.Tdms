@@ -147,7 +147,7 @@ module Object =
            BigEndian = bigEndian }: Object)
         =
         { Name =
-              name.Split('/', StringSplitOptions.RemoveEmptyEntries).[1]
+              name.Split([| '/' |], StringSplitOptions.RemoveEmptyEntries).[1]
                   .Trim('\'')
           FilePath = filePath
           Properties = properties
@@ -161,7 +161,7 @@ module Object =
            Properties = groupProperties }: Object)
         =
         { Name =
-              groupName.Split('/', StringSplitOptions.RemoveEmptyEntries).[0]
+              groupName.Split([| '/' |], StringSplitOptions.RemoveEmptyEntries).[0]
                   .Trim('\'')
           Properties = groupProperties
           Channels = Seq.map (toChannel filePath) channels }

@@ -3,7 +3,11 @@ namespace FSharp.Data.Tdms
 open System
 open System.Runtime.CompilerServices
 
+#if !IS_DESIGNTIME
 [<Struct; IsReadOnly>]
+#else
+[<Struct>]
+#endif
 type Timestamp =
     { FractionsOfASecond: uint64
       SecondsSinceNiEpoch: int64 }

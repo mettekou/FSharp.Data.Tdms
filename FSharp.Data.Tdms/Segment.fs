@@ -234,7 +234,7 @@ module Segment =
                 newOrUpdatedObjects
 
     let tdsh =
-        ReadOnlyMemory [| 0x54uy
-                          0x44uy
-                          0x53uy
-                          0x68uy |]
+        [| 0x54uy
+           0x44uy
+           0x53uy
+           0x68uy |]

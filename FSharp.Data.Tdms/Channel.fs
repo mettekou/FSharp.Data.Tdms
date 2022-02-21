@@ -136,6 +136,7 @@ module Channel =
             else
                 None
 
+    #if !IS_DESIGNTIME
     let tryGetRawDataAsyncCt<'t>
         ct
         { FilePath = path
@@ -308,3 +309,4 @@ module Channel =
                 Task.FromResult None
 
     let tryRawDataAsync<'t> = tryGetRawDataAsyncCt<'t> CancellationToken.None
+    #endif

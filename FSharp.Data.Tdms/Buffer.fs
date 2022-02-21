@@ -3,6 +3,9 @@ namespace FSharp.Data.Tdms
 open System
 open System.Buffers.Binary
 open System.Numerics
+#if IS_DESIGNTIME
+open System.Runtime.InteropServices
+#endif
 open System.Text
 
 module Buffer =
@@ -70,9 +73,25 @@ module Buffer =
     let readFloat32 (buffer: byte ReadOnlySpan byref) bigEndian =
         let value =
             if bigEndian then
+                #if IS_DESIGNTIME
+                if BitConverter.IsLittleEndian
+                then
+                   BitConverter.ToSingle(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<int> buffer)), 0)
+                else
+                    MemoryMarshal.Read<float32> buffer
+                #else
                 BinaryPrimitives.ReadSingleBigEndian buffer
+                #endif
             else
+                #if IS_DESIGNTIME
+                if not BitConverter.IsLittleEndian
+                then
+                   BitConverter.ToSingle(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<int> buffer)), 0)
+                else
+                    MemoryMarshal.Read<float32> buffer
+                #else
                 BinaryPrimitives.ReadSingleLittleEndian buffer
+                #endif
 
         buffer <- buffer.Slice 4
         value
@@ -80,9 +99,25 @@ module Buffer =
     let readFloat (buffer: byte ReadOnlySpan byref) bigEndian =
         let value =
             if bigEndian then
+                #if IS_DESIGNTIME
+                if BitConverter.IsLittleEndian
+                then
+                   BitConverter.ToDouble(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<int64> buffer)), 0)
+                else
+                    MemoryMarshal.Read<float> buffer
+                #else
                 BinaryPrimitives.ReadDoubleBigEndian buffer
+                #endif
             else
+                #if IS_DESIGNTIME
+                if not BitConverter.IsLittleEndian
+                then
+                   BitConverter.ToDouble(BitConverter.GetBytes(BinaryPrimitives.ReverseEndianness(MemoryMarshal.Read<int64> buffer)), 0)
+                else
+                    MemoryMarshal.Read<float> buffer
+                #else
                 BinaryPrimitives.ReadDoubleLittleEndian buffer
+                #endif
 
         buffer <- buffer.Slice 8
         value
@@ -124,4 +159,8 @@ module Buffer =
         let length = readUInt &buffer bigEndian |> int
         let bytes = buffer.Slice(0, length)
         buffer <- buffer.Slice length
+        #if IS_DESIGNTIME
+        Encoding.UTF8.GetString (bytes.ToArray())
+        #else
         Encoding.UTF8.GetString bytes
+        #endif

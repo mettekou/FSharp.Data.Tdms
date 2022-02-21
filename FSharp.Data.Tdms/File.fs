@@ -255,7 +255,8 @@ module File =
     let tryGetRawData<'t> groupName channelName file =
         tryFindChannel groupName channelName file
         |> Option.bind Channel.tryGetRawData<'t>
-
+    
+    #if !IS_DESIGNTIME
     /// <summary>Asynchronously returns the raw data for a <see cref="Channel" />. Returns None if the <see cref="Channel" /> does not exist, if it does not have any raw data, or if its raw data is not of the given type.</summary>
     /// <param name="groupName">the name of the <see cref="Group" /> the <see cref="Channel" /> is in.</param>
     /// <param name="channelName">the name of the <see cref="Channel" /> to get raw data for.</param>
@@ -266,6 +267,7 @@ module File =
         |> Option.defaultValue (Task.FromResult None)
 
     let tryGetRawDataAsync<'t> = tryGetRawDataAsyncCt<'t> CancellationToken.None
+    #endif
 
 type File with
 
@@ -292,7 +294,8 @@ type File with
         | Some rd ->
             rawData <- rd
             true
-
+    
+    #if !IS_DESIGNTIME
     /// <summary>
     /// Asynchronously gets the raw data for the given channel, belonging to the given group in the given TDMS file.
     /// </summary>
@@ -302,7 +305,8 @@ type File with
             | None -> return null
             | Some rd -> return rd
         }
-
+    #endif
+    
     /// <summary>
     /// Tries to get a property value for the given TDMS file.
     /// </summary>
