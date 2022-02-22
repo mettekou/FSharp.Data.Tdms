@@ -132,7 +132,7 @@ module File =
 
 
     let readAsyncCt ct path writeIndex =
-        task {
+        backgroundTask {
             let indexPath =
                 Path.ChangeExtension(path, ".tdms_index")
 
