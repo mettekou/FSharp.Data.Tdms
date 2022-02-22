@@ -17,9 +17,20 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 6.0.100
+    - name: Restore tools
+      run: dotnet tool restore
+    - name: Run fsdocs
+      run: dotnet fsdocs build --eval --strict --properties Configuration=Release
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Deploy docs
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./output
+        publish_branch: gh-pages
+        force_orphan: true
