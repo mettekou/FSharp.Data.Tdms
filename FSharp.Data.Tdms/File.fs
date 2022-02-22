@@ -187,7 +187,7 @@ module File =
 
                     let! _ = stream.ReadAsync(buffer, 0, remainingLength, ct)
 
-                    if writeIndex then
+                    if not indexExists && writeIndex then
                         do! indexStream.WriteAsync(buffer, 0, remainingLength, ct)
 
                     let mutable metaDataSpan = ReadOnlySpan buffer
