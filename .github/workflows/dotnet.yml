@@ -19,10 +19,10 @@ jobs:
         dotnet-version: 5.0.405
     - name: Restore tools
       run: dotnet tool restore
-    - name: Run fsdocs
-      run: dotnet fsdocs build --eval --strict --properties Configuration=Release
     - name: Restore dependencies
       run: dotnet restore
+    - name: Run fsdocs
+      run: dotnet fsdocs build --eval --strict --properties Configuration=Release
     - name: Build
       run: dotnet build --no-restore
     - name: Test
