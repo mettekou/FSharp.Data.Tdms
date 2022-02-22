@@ -131,7 +131,7 @@ module File =
         ofObjects path objects
 
 
-    let readAsyncCt ct path writeIndex =
+    let readAsyncCt (ct: CancellationToken) (path: string) (writeIndex: bool) : File Task =
         backgroundTask {
             let indexPath =
                 Path.ChangeExtension(path, ".tdms_index")
