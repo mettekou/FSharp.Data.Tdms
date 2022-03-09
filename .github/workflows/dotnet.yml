@@ -21,10 +21,10 @@ jobs:
       run: dotnet tool restore
     - name: Restore dependencies
       run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore -c Release
     - name: Run fsdocs
       run: dotnet fsdocs build --eval --strict --properties Configuration=Release
-    - name: Build
-      run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
     - name: Deploy docs
