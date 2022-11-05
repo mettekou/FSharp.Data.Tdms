@@ -46,13 +46,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.TypeProviders.SDK" Version="7.0.3" />
-    <PackageReference Include="MinVer" Version="3.1.0">
+    <PackageReference Include="FSharp.TypeProviders.SDK" Version="8.0.2" />
+    <PackageReference Include="MinVer" Version="4.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Update="FSharp.Core" Version="6.0.3" />
-    <PackageReference Include="System.Memory" Version="4.5.4" />
+    <PackageReference Update="FSharp.Core" Version="6.0.6" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
     <PackageReference Include="System.Text.Encoding" Version="4.3.0" /> 
   </ItemGroup>
 
