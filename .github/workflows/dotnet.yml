@@ -29,7 +29,7 @@ jobs:
       - name: Run fsdocs
         run: dotnet fsdocs build --eval --strict --properties Configuration=Release
       - name: Pack
-        run: dotnet pack ./FSharp.Data.Tdms/FSharp.Data.Tdms.fsproj -c Release --include-source -p:SymbolPackageFormat=snupkg
+        run: dotnet pack ./FSharp.Data.Tdms/FSharp.Data.Tdms.fsproj -c Release --include-source /p:ContinuousIntegrationBuild=true -p:SymbolPackageFormat=snupkg
       - name: NuGet push
         run: dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
         if: ${{ github.ref == 'refs/heads/master' }}
