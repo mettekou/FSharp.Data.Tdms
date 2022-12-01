@@ -5,6 +5,7 @@
     <Authors>Dylan Meysmans</Authors>
     <Description>TDMS 2.0 support for F# and C#</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://mettekou.github.io/FSharp.Data.Tdms</PackageProjectUrl>
     <RepositoryUrl>https://github.com/mettekou/FSharp.Data.Tdms</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
