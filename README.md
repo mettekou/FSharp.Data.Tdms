@@ -1,4 +1,4 @@
-# `FSharp.Data.Tdms` [![](https://buildstats.info/nuget/MatrixProfile?includePreReleases=true)](https://www.nuget.org/packages/FSharp.Data.Tdms)
+# `FSharp.Data.Tdms` [![](https://buildstats.info/nuget/FSharp.Data.Tdms?includePreReleases=true)](https://www.nuget.org/packages/FSharp.Data.Tdms)
 
 `FSharp.Data.Tdms` provides support for TDMS 2.0 files<span
 id="the-ni-tdms-file-format"></span>&lt;&lt;#the-ni-tdms-file-format-entry,<sup>\[1\]</sup>&gt;&gt;
