@@ -31,7 +31,7 @@ jobs:
       - name: Pack
         run: dotnet pack ./FSharp.Data.Tdms/FSharp.Data.Tdms.fsproj -c Release --include-source -p:SymbolPackageFormat=snupkg
       - name: NuGet push
-        run: dotnet nuget push -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
+        run: dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
         if: ${{ github.ref == 'refs/heads/master' }}
       - name: Deploy docs
         uses: peaceiris/actions-gh-pages@v3
