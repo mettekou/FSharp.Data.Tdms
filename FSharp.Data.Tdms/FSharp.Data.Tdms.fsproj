@@ -8,6 +8,7 @@
     <RepositoryUrl>https://github.com/mettekou/FSharp.Data.Tdms</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <FSharpToolsDirectory>typeproviders</FSharpToolsDirectory>
     <PackagePath>typeproviders</PackagePath>
@@ -41,7 +42,6 @@
   <ItemGroup>
     <ProjectReference Include="..\FSharp.Data.Tdms.DesignTime\FSharp.Data.Tdms.DesignTime.fsproj">
       <IsFSharpDesignTimeProvider>true</IsFSharpDesignTimeProvider>
-      <PrivateAssets>all</PrivateAssets>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
