@@ -24,10 +24,15 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore -c Release
+      - name: Test
+        run: dotnet test --no-build -c Release --verbosity normal
       - name: Run fsdocs
         run: dotnet fsdocs build --eval --strict --properties Configuration=Release
-      - name: Test
-        run: dotnet test --no-build --verbosity normal
+      - name: Pack
+        run: dotnet pack --no-build -c Release --include-source -p:SymbolPackageFormat=snupkg
+      - name: NuGet push
+        run: dotnet nuget push -s https://api.nuget.org/v3/index.json -k ${{secrets.NUGET_API_KEY}}
+        if: ${{ github.ref == 'refs/heads/master' }}
       - name: Deploy docs
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -35,3 +40,4 @@ jobs:
           publish_dir: ./output
           publish_branch: gh-pages
           force_orphan: true
+        if: ${{ github.ref == 'refs/heads/master' }}
