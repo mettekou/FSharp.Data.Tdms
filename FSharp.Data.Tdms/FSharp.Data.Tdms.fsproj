@@ -8,7 +8,7 @@
     <RepositoryUrl>https://github.com/mettekou/FSharp.Data.Tdms</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <PackageReadmeFile>../README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <FSharpToolsDirectory>typeproviders</FSharpToolsDirectory>
     <PackagePath>typeproviders</PackagePath>
@@ -27,6 +27,7 @@
     <Compile Include="Segment.fs" />
     <Compile Include="File.fs" />
     <Compile Include="FSharp.Data.Tdms.Runtime.fs" />
+    <None Include="..\README.md" Pack="true" PackagePath="\"/>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
