@@ -116,7 +116,7 @@ module File =
                 Segment.readMetaData
                     objects
                     (metaDataStart + rawDataOffset)
-                    (metaDataStart + nextSegmentOffset)
+                    (metaDataStart + min nextSegmentOffset (uint64 stream.Length - metaDataStart))
                     &metaDataSpan
                     (tableOfContents.HasFlag(TableOfContents.ContainsBigEndianData))
                     (tableOfContents.HasFlag(TableOfContents.ContainsInterleavedData))
