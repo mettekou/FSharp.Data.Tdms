@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>index</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Dylan Meysmans">
+
+    <link rel="stylesheet" id="theme_link" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.6.0/materia/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://mettekou.github.io/FSharp.Data.Tdms/img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="https://mettekou.github.io/FSharp.Data.Tdms/content/navbar-fixed-left.css" />
+    <link type="text/css" rel="stylesheet" href="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-default.css" />
+    <link type="text/css" rel="stylesheet" href="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-custom.css" />
+    <script type="text/javascript" src="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!-- BEGIN SEARCH BOX: this adds support for the search box -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/JavaScript-autoComplete/1.0.4/auto-complete.css" />
+    <!-- END SEARCH BOX: this adds support for the search box -->
+    
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-light bg-secondary fixed-left" id="fsdocs-nav">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse navbar-nav-scroll" id="navbarsExampleDefault">
+            <a href="https://mettekou.github.io/FSharp.Data.Tdms/"><img id="fsdocs-logo" src="https://mettekou.github.io/FSharp.Data.Tdms/img/logo.png" /></a>
+            <!-- BEGIN SEARCH BOX: this adds support for the search box -->
+            <div id="header">
+                <div class="searchbox" id="fsdocs-searchbox">
+                    <label for="search-by">
+                        <i class="fas fa-search"></i>
+                    </label>
+                    <input data-search-input="" id="search-by" type="search" placeholder="Search..." />
+                    <span data-search-clear="">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- END SEARCH BOX: this adds support for the search box -->
+            <ul class="navbar-nav">
+                <li class="nav-header">Links</li>
+                <li class="nav-item" id="fsdocs-license-link"><a class="nav-link" href="https://github.com/mettekou/FSharp.Data.Tdms/blob/master/LICENSE.md">License</a></li>
+                <li class="nav-item" id="fsdocs-release-notes-link"><a class="nav-link" href="https://github.com/mettekou/FSharp.Data.Tdms/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+                <li class="nav-item" id="fsdocs-repository-link"><a class="nav-link" href="https://github.com/mettekou/FSharp.Data.Tdms/">Source Repository</a></li>
+                
+                <li class="nav-header">
+  API Reference
+</li>             
+<li class="nav-item">
+  <a class="nav-link" href="https://mettekou.github.io/FSharp.Data.Tdms/reference/index.html">
+    All Namespaces
+  </a>
+</li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="masthead">
+            <h3 class="muted"><a href="https://mettekou.github.io/FSharp.Data.Tdms/">FSharp.Data.Tdms</a></h3>
+        </div>
+        <hr />
+        <div class="container" id="fsdocs-content">
+            <h2><a name="Performance" class="anchor" href="#Performance">Performance</a></h2>
+<p>The <a href="https://benchmarkdotnet.org">BenchmarkDotNet</a> benchmarks in this
+section give an idea of the performance of <code>FSharp.Data.Tdms</code> when
+compared to <a href="https://github.com/mikeobrien/TDMSReader"><code>TDMSReader</code></a>,
+the only other TDMS 2.0 implementation which works on .NET 6 and later. Since
+<code>TDMSReader</code> does not support reading TDMS index files, the benchmark
+disables this feature for <code>FSharp.Data.Tdms</code> as well, for a fair
+comparison. This means that <code>FSharp.Data.Tdms</code> may perform better in
+practice for TDMS files with many raw data segments.</p>
+<h3><a name="Small-file" class="anchor" href="#Small-file">Small file</a></h3>
+<p>This benchmark reads 30,489 double-precision floating points from a segmented 3.1 MB TDMS 2.0 file.</p>
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="ini">
+BenchmarkDotNet=v0.13.2, OS=opensuse-tumbleweed 20221224
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.101
+  [Host]   : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2 DEBUG
+  .NET 7.0 : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2
+
+Job=.NET 7.0  Runtime=.NET 7.0
+
+</code></pre></td></tr></table>
+<table>
+<thead>
+<tr class="header">
+<th><p>Method</p></th>
+<th align="right"><p>Mean</p></th>
+<th align="right"><p>Error</p></th>
+<th align="right"><p>StdDev</p></th>
+<th align="right"><p>Ratio</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>TDMSReader</p></td>
+<td align="right"><p>1,729.1 μs</p></td>
+<td align="right"><p>9.91 μs</p></td>
+<td align="right"><p>9.27 μs</p></td>
+<td align="right"><p>1.00</p></td>
+</tr>
+<tr class="even">
+<td><p>FSharpDataTdms</p></td>
+<td align="right"><p>737.0 μs</p></td>
+<td align="right"><p>1.72 μs</p></td>
+<td align="right"><p>1.43 μs</p></td>
+<td align="right"><p>0.43</p></td>
+</tr>
+<tr class="odd">
+<td><p>FSharpDataTdmsAsync</p></td>
+<td align="right"><p>910.2 μs</p></td>
+<td align="right"><p>17.96 μs</p></td>
+<td align="right"><p>20.68 μs</p></td>
+<td align="right"><p>0.52</p></td>
+</tr>
+</tbody>
+</table>
+
+<h3><a name="Medium-sized-file" class="anchor" href="#Medium-sized-file">Medium-sized file</a></h3>
+<p>This benchmark reads a channel of 43,200 strings from a segmented 138.1 MB TDMS 2.0 file.</p>
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="ini">
+BenchmarkDotNet=v0.13.2, OS=opensuse-tumbleweed 20221224
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.101
+  [Host]   : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2 DEBUG
+  .NET 7.0 : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2
+
+Job=.NET 7.0  Runtime=.NET 7.0
+
+</code></pre></td></tr></table>
+<table>
+<thead>
+<tr class="header">
+<th><p>Method</p></th>
+<th align="right"><p>Mean</p></th>
+<th align="right"><p>Error</p></th>
+<th align="right"><p>StdDev</p></th>
+<th align="right"><p>Ratio</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>TDMSReader</p></td>
+<td align="right"><p>9.001 s</p></td>
+<td align="right"><p>0.0948 s</p></td>
+<td align="right"><p>0.0886 s</p></td>
+<td align="right"><p>1.00</p></td>
+</tr>
+<tr class="even">
+<td><p>FSharpDataTdms</p></td>
+<td align="right"><p>2.657 s</p></td>
+<td align="right"><p>0.0113 s</p></td>
+<td align="right"><p>0.0088 s</p></td>
+<td align="right"><p>0.29</p></td>
+</tr>
+<tr class="odd">
+<td><p>FSharpDataTdmsAsync</p></td>
+<td align="right"><p>2.791 s</p></td>
+<td align="right"><p>0.0329 s</p></td>
+<td align="right"><p>0.0291 s</p></td>
+<td align="right"><p>0.31</p></td>
+</tr>
+</tbody>
+</table>
+
+<h3><a name="Large-file" class="anchor" href="#Large-file">Large file</a></h3>
+<p>This benchmark reads a channel of 779,297 double-precision floating points from a segmented 1.54 GB TDMS 2.0 file.</p>
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="ini">
+BenchmarkDotNet=v0.13.2, OS=opensuse-tumbleweed 20221224
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.101
+  [Host]   : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2 DEBUG
+  .NET 7.0 : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2
+
+Job=.NET 7.0  Runtime=.NET 7.0
+
+</code></pre></td></tr></table>
+<table>
+<thead>
+<tr class="header">
+<th><p>Method</p></th>
+<th align="right"><p>Mean</p></th>
+<th align="right"><p>Error</p></th>
+<th align="right"><p>StdDev</p></th>
+<th align="right"><p>Ratio</p></th>
+<th align="right"><p>RatioSD</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>TDMSReader</p></td>
+<td align="right"><p>1,028.7 ms</p></td>
+<td align="right"><p>12.10 ms</p></td>
+<td align="right"><p>10.11 ms</p></td>
+<td align="right"><p>1.00</p></td>
+<td align="right"><p>0.00</p></td>
+</tr>
+<tr class="even">
+<td><p>FSharpDataTdms</p></td>
+<td align="right"><p>533.7 ms</p></td>
+<td align="right"><p>4.77 ms</p></td>
+<td align="right"><p>4.46 ms</p></td>
+<td align="right"><p>0.52</p></td>
+<td align="right"><p>0.01</p></td>
+</tr>
+<tr class="odd">
+<td><p>FSharpDataTdmsAsync</p></td>
+<td align="right"><p>697.8 ms</p></td>
+<td align="right"><p>13.41 ms</p></td>
+<td align="right"><p>31.35 ms</p></td>
+<td align="right"><p>0.67</p></td>
+<td align="right"><p>0.03</p></td>
+</tr>
+</tbody>
+</table>
+
+
+            
+        </div>
+
+        <!-- BEGIN SEARCH BOX: this adds support for the search box -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/JavaScript-autoComplete/1.0.4/auto-complete.css" />
+        <script type="text/javascript">var fsdocs_search_baseurl = 'https://mettekou.github.io/FSharp.Data.Tdms/';</script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.8/lunr.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/JavaScript-autoComplete/1.0.4/auto-complete.min.js"></script>
+        <script type="text/javascript" src="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-search.js"></script>
+        <!-- END SEARCH BOX: this adds support for the search box -->
+    </div>
+</body>
+
+</html>

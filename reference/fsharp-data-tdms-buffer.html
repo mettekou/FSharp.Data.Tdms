@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Buffer (FSharp.Data.Tdms)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Dylan Meysmans">
+
+    <link rel="stylesheet" id="theme_link" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.6.0/materia/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://mettekou.github.io/FSharp.Data.Tdms/img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="https://mettekou.github.io/FSharp.Data.Tdms/content/navbar-fixed-left.css" />
+    <link type="text/css" rel="stylesheet" href="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-default.css" />
+    <link type="text/css" rel="stylesheet" href="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-custom.css" />
+    <script type="text/javascript" src="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!-- BEGIN SEARCH BOX: this adds support for the search box -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/JavaScript-autoComplete/1.0.4/auto-complete.css" />
+    <!-- END SEARCH BOX: this adds support for the search box -->
+    
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-light bg-secondary fixed-left" id="fsdocs-nav">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse navbar-nav-scroll" id="navbarsExampleDefault">
+            <a href="https://mettekou.github.io/FSharp.Data.Tdms/"><img id="fsdocs-logo" src="https://mettekou.github.io/FSharp.Data.Tdms/img/logo.png" /></a>
+            <!-- BEGIN SEARCH BOX: this adds support for the search box -->
+            <div id="header">
+                <div class="searchbox" id="fsdocs-searchbox">
+                    <label for="search-by">
+                        <i class="fas fa-search"></i>
+                    </label>
+                    <input data-search-input="" id="search-by" type="search" placeholder="Search..." />
+                    <span data-search-clear="">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- END SEARCH BOX: this adds support for the search box -->
+            <ul class="navbar-nav">
+                <li class="nav-header">Links</li>
+                <li class="nav-item" id="fsdocs-license-link"><a class="nav-link" href="https://github.com/mettekou/FSharp.Data.Tdms/blob/master/LICENSE.md">License</a></li>
+                <li class="nav-item" id="fsdocs-release-notes-link"><a class="nav-link" href="https://github.com/mettekou/FSharp.Data.Tdms/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+                <li class="nav-item" id="fsdocs-repository-link"><a class="nav-link" href="https://github.com/mettekou/FSharp.Data.Tdms/">Source Repository</a></li>
+                
+                <li class="nav-header">
+  API Reference
+</li>             
+<li class="nav-item">
+  <a class="nav-link" href="https://mettekou.github.io/FSharp.Data.Tdms/reference/index.html">
+    All Namespaces
+  </a>
+</li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="masthead">
+            <h3 class="muted"><a href="https://mettekou.github.io/FSharp.Data.Tdms/">FSharp.Data.Tdms</a></h3>
+        </div>
+        <hr />
+        <div class="container" id="fsdocs-content">
+            <div>
+  <h2>
+    Buffer Module
+  </h2>
+  <dl class="fsdocs-metadata">
+    <dt>
+      Namespace: 
+      <a href="https://mettekou.github.io/FSharp.Data.Tdms/reference/fsharp-data-tdms.html">
+        FSharp.Data.Tdms
+      </a>
+    </dt>
+    <dt>
+      Assembly: FSharp.Data.Tdms.dll
+    </dt>
+  </dl>
+  <div class="fsdocs-xmldoc">
+    <div>
+      <p class="fsdocs-summary">
+        
+      </p>
+    </div>
+  </div>
+  <div>
+    <h3>
+      Functions and values
+    </h3>
+    <table class="table outer-list fsdocs-member-list">
+      <thead>
+        <tr>
+          <td class="fsdocs-member-list-header">
+            Function or value
+          </td>
+          <td class="fsdocs-member-list-header">
+            Description
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '2', 2)" onmouseover="showTip(event, '2', 2)">
+                <p>
+                  <a id="readFloat">
+                    <a href="#readFloat">
+                      <code><span>readFloat&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="2">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readFloat&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>float</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readFloat`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readFloat\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L99-99" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code>float</code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
+                <p>
+                  <a id="readFloat32">
+                    <a href="#readFloat32">
+                      <code><span>readFloat32&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="3">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readFloat32&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>float32</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readFloat32`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readFloat32\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L73-73" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code>float32</code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '4', 4)" onmouseover="showTip(event, '4', 4)">
+                <p>
+                  <a id="readFloat80">
+                    <a href="#readFloat80">
+                      <code><span>readFloat80&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="4">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readFloat80&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://mettekou.github.io/FSharp.Data.Tdms/reference/fsharp-data-tdms-extended.html">Extended</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readFloat80`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readFloat80\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L125-125" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code><a href="https://mettekou.github.io/FSharp.Data.Tdms/reference/fsharp-data-tdms-extended.html">Extended</a></code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '5', 5)" onmouseover="showTip(event, '5', 5)">
+                <p>
+                  <a id="readInt">
+                    <a href="#readInt">
+                      <code><span>readInt&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="5">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readInt&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>int</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readInt`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readInt\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L23-23" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code>int</code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '6', 6)" onmouseover="showTip(event, '6', 6)">
+                <p>
+                  <a id="readInt16">
+                    <a href="#readInt16">
+                      <code><span>readInt16&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="6">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readInt16&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>int16</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readInt16`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readInt16\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L13-13" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code>int16</code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '7', 7)" onmouseover="showTip(event, '7', 7)">
+                <p>
+                  <a id="readInt64">
+                    <a href="#readInt64">
+                      <code><span>readInt64&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="7">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readInt64&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>int64</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readInt64`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readInt64\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L33-33" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code>int64</code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '8', 8)" onmouseover="showTip(event, '8', 8)">
+                <p>
+                  <a id="readString">
+                    <a href="#readString">
+                      <code><span>readString&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="8">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readString&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>string</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readString`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readString\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L158-158" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code>string</code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '9', 9)" onmouseover="showTip(event, '9', 9)">
+                <p>
+                  <a id="readType">
+                    <a href="#readType">
+                      <code><span>readType&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="9">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readType&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code><a href="https://docs.microsoft.com/dotnet/api/system.type">Type</a></code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readType`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readType\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L133-133" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code><a href="https://docs.microsoft.com/dotnet/api/system.type">Type</a></code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '10', 10)" onmouseover="showTip(event, '10', 10)">
+                <p>
+                  <a id="readUInt">
+                    <a href="#readUInt">
+                      <code><span>readUInt&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="10">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readUInt&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>uint32</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readUInt`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readUInt\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L53-53" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code>uint32</code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '11', 11)" onmouseover="showTip(event, '11', 11)">
+                <p>
+                  <a id="readUInt16">
+                    <a href="#readUInt16">
+                      <code><span>readUInt16&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="11">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readUInt16&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>uint16</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readUInt16`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readUInt16\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L43-43" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code>uint16</code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+        <tr>
+          <td class="fsdocs-member-usage">
+            <div>
+              <code onmouseout="hideTip(event, '12', 12)" onmouseover="showTip(event, '12', 12)">
+                <p>
+                  <a id="readUInt64">
+                    <a href="#readUInt64">
+                      <code><span>readUInt64&#32;<span>buffer&#32;bigEndian</span></span></code>
+                    </a>
+                  </a>
+                </p>
+              </code>
+              <div class="fsdocs-tip" id="12">
+                <div class="member-tooltip">
+                  Full Usage: 
+                  <code><span>readUInt64&#32;<span>buffer&#32;bigEndian</span></span></code>
+                  <br/>
+                  <br/>
+                  Parameters: 
+                  <ul>
+                    <span>
+                      <b>
+                        buffer
+                      </b>
+                      :
+                      <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+                    </span>
+                    <br/>
+                    <span>
+                      <b>
+                        bigEndian
+                      </b>
+                      :
+                      <code>bool</code>
+                    </span>
+                    <br/>
+                  </ul>
+                  <br/>
+                  <span>
+                    Returns: 
+                    <code>uint64</code>
+                  </span>
+                  <br/>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td class="fsdocs-member-xmldoc">
+            <div class="fsdocs-summary">
+              <div class="fsdocs-source-link" title="Copy signature (Markdown)" onclick="Clipboard_CopyTo('`cref:M:FSharp.Data.Tdms.Buffer.readUInt64`')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-md-hover.png" class="hover"/>
+              </div>
+              <div class="fsdocs-source-link" title="Copy signature (XML)" onclick="Clipboard_CopyTo('<see cref=\'M:FSharp.Data.Tdms.Buffer.readUInt64\'/>')">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/copy-xml-hover.png" class="hover"/>
+              </div>
+              <a href="https://github.com/mettekou/FSharp.Data.Tdms/tree/master/FSharp.Data.Tdms/Buffer.fs#L63-63" class="fsdocs-source-link" title="Source on GitHub">
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github.png" class="normal"/>
+                <img src="https://mettekou.github.io/FSharp.Data.Tdms/content/img/github-hover.png" class="hover"/>
+              </a>
+              <p class="fsdocs-summary">
+                
+              </p>
+            </div>
+            <dl class="fsdocs-params">
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  buffer
+                </span>
+                :
+                <code><span>byref&lt;<span><a href="https://docs.microsoft.com/dotnet/api/system.readonlyspan-1">ReadOnlySpan</a>&lt;byte&gt;</span>&gt;</span></code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+              <dt class="fsdocs-param">
+                <span class="fsdocs-param-name">
+                  bigEndian
+                </span>
+                :
+                <code>bool</code>
+              </dt>
+              <dd class="fsdocs-param-docs"></dd>
+            </dl>
+            <dl class="fsdocs-returns">
+              <dt>
+                <span class="fsdocs-return-name">
+                  Returns: 
+                </span>
+                <code>uint64</code>
+              </dt>
+              <dd class="fsdocs-return-docs"></dd>
+            </dl>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+            
+        </div>
+
+        <!-- BEGIN SEARCH BOX: this adds support for the search box -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/JavaScript-autoComplete/1.0.4/auto-complete.css" />
+        <script type="text/javascript">var fsdocs_search_baseurl = 'https://mettekou.github.io/FSharp.Data.Tdms/';</script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.8/lunr.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/JavaScript-autoComplete/1.0.4/auto-complete.min.js"></script>
+        <script type="text/javascript" src="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-search.js"></script>
+        <!-- END SEARCH BOX: this adds support for the search box -->
+    </div>
+</body>
+
+</html>

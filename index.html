@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>TDMS 2.0 File Support for F# and C#
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Dylan Meysmans">
+
+    <link rel="stylesheet" id="theme_link" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.6.0/materia/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+    <link rel="shortcut icon" type="image/x-icon" href="https://mettekou.github.io/FSharp.Data.Tdms/img/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="https://mettekou.github.io/FSharp.Data.Tdms/content/navbar-fixed-left.css" />
+    <link type="text/css" rel="stylesheet" href="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-default.css" />
+    <link type="text/css" rel="stylesheet" href="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-custom.css" />
+    <script type="text/javascript" src="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!-- BEGIN SEARCH BOX: this adds support for the search box -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/JavaScript-autoComplete/1.0.4/auto-complete.css" />
+    <!-- END SEARCH BOX: this adds support for the search box -->
+    
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-light bg-secondary fixed-left" id="fsdocs-nav">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse navbar-nav-scroll" id="navbarsExampleDefault">
+            <a href="https://mettekou.github.io/FSharp.Data.Tdms/"><img id="fsdocs-logo" src="https://mettekou.github.io/FSharp.Data.Tdms/img/logo.png" /></a>
+            <!-- BEGIN SEARCH BOX: this adds support for the search box -->
+            <div id="header">
+                <div class="searchbox" id="fsdocs-searchbox">
+                    <label for="search-by">
+                        <i class="fas fa-search"></i>
+                    </label>
+                    <input data-search-input="" id="search-by" type="search" placeholder="Search..." />
+                    <span data-search-clear="">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- END SEARCH BOX: this adds support for the search box -->
+            <ul class="navbar-nav">
+                <li class="nav-header">Links</li>
+                <li class="nav-item" id="fsdocs-license-link"><a class="nav-link" href="https://github.com/mettekou/FSharp.Data.Tdms/blob/master/LICENSE.md">License</a></li>
+                <li class="nav-item" id="fsdocs-release-notes-link"><a class="nav-link" href="https://github.com/mettekou/FSharp.Data.Tdms/blob/master/RELEASE_NOTES.md">Release Notes</a></li>
+                <li class="nav-item" id="fsdocs-repository-link"><a class="nav-link" href="https://github.com/mettekou/FSharp.Data.Tdms/">Source Repository</a></li>
+                
+                <li class="nav-header">
+  API Reference
+</li>             
+<li class="nav-item">
+  <a class="nav-link" href="https://mettekou.github.io/FSharp.Data.Tdms/reference/index.html">
+    All Namespaces
+  </a>
+</li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="masthead">
+            <h3 class="muted"><a href="https://mettekou.github.io/FSharp.Data.Tdms/">FSharp.Data.Tdms</a></h3>
+        </div>
+        <hr />
+        <div class="container" id="fsdocs-content">
+            <h1><a name="TDMS-2-0-File-Support-for-F-and-C" class="anchor" href="#TDMS-2-0-File-Support-for-F-and-C">TDMS 2.0 File Support for F# and C#</a></h1>
+<p><code>FSharp.Data.Tdms</code> provides support for TDMS 2.0 files<a href="#1"><sup>[1]</sup></a> from F# and C# on .NET 6.0.
+From F# it allows you to access these in a type-safe manner through a generative <a href="https://docs.microsoft.com/en-us/dotnet/fsharp/tutorials/type-providers/[type">https://docs.microsoft.com/en-us/dotnet/fsharp/tutorials/type-providers/[type</a> provider], while plain old functions and methods are available to both F# and C#.
+<code>FSharp.Data.Tdms</code> reads raw channel data from TDMS 2.0 files as arrays.</p>
+<h2><a name="Missing-features" class="anchor" href="#Missing-features">Missing features</a></h2>
+<ul>
+<li>Reading DAQmx raw data</li>
+<li>Defragmenting TDMS files</li>
+<li>Writing TDMS files</li>
+</ul>
+<h2><a name="License" class="anchor" href="#License">License</a></h2>
+<p><code>FSharp.Data.Tdms</code> is licensed under an MIT License.
+Please refer to <a href="https://github.com/mettekou/FSharp.Data.Tdms/blob/master/LICENSE"><code>LICENSE</code></a> for its full text.</p>
+<h2><a name="Usage" class="anchor" href="#Usage">Usage</a></h2>
+<h3><a name="From-F" class="anchor" href="#From-F">From F#</a></h3>
+<p>Using the generative type provider, given a TDMS file <code>Experiment.tdms</code> with a channel containing floating-point values named <code>Channel1</code> within a group named <code>Group1</code>:</p>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="pp">#r</span> <span class="s">&quot;nuget: FSharp.Data.Tdms&quot;</span>
+
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="id">FSharp</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="id">Data</span>
+
+<span class="pn">[&lt;</span><span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="rt">Literal</span><span class="pn">&gt;]</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="prop">Path</span> <span class="o">=</span> <span class="s">&quot;Experiment.tdms&quot;</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs5', 5)" onmouseover="showTip(event, 'fs5', 5)" class="rt">Experiment</span> <span class="o">=</span> <span class="id">TdmsProvider</span><span class="pn">&lt;</span><span onmouseout="hideTip(event, 'fs4', 6)" onmouseover="showTip(event, 'fs4', 6)" class="id">Path</span><span class="pn">,</span> <span class="id">WriteIndex</span> <span class="o">=</span> <span class="k">true</span><span class="pn">&gt;</span>
+
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="id">experiment</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs5', 8)" onmouseover="showTip(event, 'fs5', 8)" class="fn">Experiment</span><span class="pn">(</span><span onmouseout="hideTip(event, 'fs4', 9)" onmouseover="showTip(event, 'fs4', 9)" class="prop">Path</span><span class="pn">)</span>
+
+<span onmouseout="hideTip(event, 'fs6', 10)" onmouseover="showTip(event, 'fs6', 10)" class="id">experiment</span><span class="pn">.</span><span class="id">Group1</span><span class="pn">.</span><span class="id">Channel1</span><span class="pn">.</span><span class="id">Data</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs7', 11)" onmouseover="showTip(event, 'fs7', 11)" class="m">Array</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs8', 12)" onmouseover="showTip(event, 'fs8', 12)" class="id">iter</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs9', 13)" onmouseover="showTip(event, 'fs9', 13)" class="fn">printfn</span> <span class="s">&quot;</span><span class="pf">%f</span><span class="s">&quot;</span><span class="pn">)</span>
+</code></pre>
+<p>Alternatively, use the functions in the <code>FSharp.Data.Tdms</code> namespace, mainly those in the <code>File</code> module:</p>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="pp">#r</span> <span class="s">&quot;nuget: FSharp.Data.Tdms&quot;</span>
+
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 14)" onmouseover="showTip(event, 'fs1', 14)" class="id">FSharp</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs2', 15)" onmouseover="showTip(event, 'fs2', 15)" class="id">Data</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs10', 16)" onmouseover="showTip(event, 'fs10', 16)" class="id">Tdms</span>
+
+<span onmouseout="hideTip(event, 'fs11', 17)" onmouseover="showTip(event, 'fs11', 17)" class="m">File</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs12', 18)" onmouseover="showTip(event, 'fs12', 18)" class="id">read</span> <span class="s">&quot;Experiment.tdms&quot;</span> <span class="k">true</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs11', 19)" onmouseover="showTip(event, 'fs11', 19)" class="m">File</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs13', 20)" onmouseover="showTip(event, 'fs13', 20)" class="id">tryRawData</span><span class="pn">&lt;</span><span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="vt">float</span><span class="pn">&gt;</span> <span class="s">&quot;Group1&quot;</span> <span class="s">&quot;Channel1&quot;</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="m">Option</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 23)" onmouseover="showTip(event, 'fs16', 23)" class="id">defaultValue</span> <span class="pn">[|</span><span class="pn">|]</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs7', 24)" onmouseover="showTip(event, 'fs7', 24)" class="m">Array</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs8', 25)" onmouseover="showTip(event, 'fs8', 25)" class="id">iter</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs9', 26)" onmouseover="showTip(event, 'fs9', 26)" class="fn">printfn</span> <span class="s">&quot;</span><span class="pf">%f</span><span class="s">&quot;</span><span class="pn">)</span>
+</code></pre>
+<p>These functions have asynchronous equivalents:</p>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="pp">#r</span> <span class="s">&quot;nuget: FSharp.Data.Tdms&quot;</span>
+
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 27)" onmouseover="showTip(event, 'fs1', 27)" class="id">FSharp</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs17', 28)" onmouseover="showTip(event, 'fs17', 28)" class="id">Control</span><span class="pn">.</span><span class="id">Tasks</span><span class="pn">.</span><span class="id">NonAffine</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 29)" onmouseover="showTip(event, 'fs1', 29)" class="id">FSharp</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs2', 30)" onmouseover="showTip(event, 'fs2', 30)" class="id">Data</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs10', 31)" onmouseover="showTip(event, 'fs10', 31)" class="id">Tdms</span>
+
+<span onmouseout="hideTip(event, 'fs18', 32)" onmouseover="showTip(event, 'fs18', 32)" class="k">task</span> <span class="pn">{</span>
+<span class="k">let!</span> <span onmouseout="hideTip(event, 'fs19', 33)" onmouseover="showTip(event, 'fs19', 33)" class="fn">file</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs11', 34)" onmouseover="showTip(event, 'fs11', 34)" class="m">File</span><span class="pn">.</span><span class="id">readAsync</span> <span class="s">&quot;Experiment.tdms&quot;</span> <span class="k">true</span>
+<span class="k">let!</span> <span onmouseout="hideTip(event, 'fs20', 35)" onmouseover="showTip(event, 'fs20', 35)" class="fn">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs11', 36)" onmouseover="showTip(event, 'fs11', 36)" class="m">File</span><span class="pn">.</span><span class="id">tryRawDataAsync</span><span class="pn">&lt;</span><span onmouseout="hideTip(event, 'fs14', 37)" onmouseover="showTip(event, 'fs14', 37)" class="id">float</span><span class="pn">&gt;</span> <span class="s">&quot;Group1&quot;</span> <span class="s">&quot;Channel1&quot;</span>
+
+    <span onmouseout="hideTip(event, 'fs15', 38)" onmouseover="showTip(event, 'fs15', 38)" class="m">Option</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs16', 39)" onmouseover="showTip(event, 'fs16', 39)" class="id">defaultValue</span> <span onmouseout="hideTip(event, 'fs20', 40)" onmouseover="showTip(event, 'fs20', 40)" class="fn">data</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs7', 41)" onmouseover="showTip(event, 'fs7', 41)" class="m">Array</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs8', 42)" onmouseover="showTip(event, 'fs8', 42)" class="id">iter</span> <span class="pn">(</span><span onmouseout="hideTip(event, 'fs9', 43)" onmouseover="showTip(event, 'fs9', 43)" class="fn">printfn</span> <span class="s">&quot;</span><span class="pf">%f</span><span class="s">&quot;</span><span class="pn">)</span>
+<span class="pn">}</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs21', 44)" onmouseover="showTip(event, 'fs21', 44)" class="id">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs22', 45)" onmouseover="showTip(event, 'fs22', 45)" class="id">AwaitTask</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs21', 46)" onmouseover="showTip(event, 'fs21', 46)" class="id">Async</span><span class="pn">.</span><span onmouseout="hideTip(event, 'fs23', 47)" onmouseover="showTip(event, 'fs23', 47)" class="id">RunSynchronously</span>
+</code></pre>
+<h3><a name="From-C" class="anchor" href="#From-C">From C#</a></h3>
+<p>When using <code>FSharp.Data.Tdms</code> from C#, prefer the API for idiomatic C#:</p>
+<table class="pre"><tr><td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">using</span> System;
+<span class="k">using</span> FSharp.Data.Tdms;
+
+<span class="k">class</span> Program
+{
+    <span class="k">static</span> <span class="k">void</span> Main(<span class="k">string</span>[] args)
+    {
+        File.Read(<span class="s">"Experiment.tdms"</span>, <span class="k">true</span>).TryGetRawData(<span class="s">"Group1"</span>, <span class="s">"Channel1"</span>, <span class="k">out</span> <span class="k">double</span>[] data);
+
+        <span class="k">foreach</span> (<span class="k">double</span> sample <span class="k">in</span> data)
+        {
+            Console.WriteLine(sample);
+        }
+    }
+}
+</code></pre></td></tr></table>
+<p>Or asynchronously:</p>
+<table class="pre"><tr><td class="snippet"><pre class="fssnip highlighted"><code lang="csharp"><span class="k">using</span> System;
+<span class="k">using</span> FSharp.Data.Tdms;
+
+<span class="k">class</span> Program
+{
+    <span class="k">static</span> <span class="k">async</span> Task Main(<span class="k">string</span>[] args)
+    {
+        <span class="k">var</span> file <span class="o">=</span> await File.ReadAsync(<span class="s">"Experiment.tdms"</span>, <span class="k">true</span>);
+        <span class="k">var</span> data <span class="o">=</span> await file.TryGetRawDataAsync(<span class="s">"Group1"</span>, <span class="s">"Channel1"</span>);
+
+        <span class="k">foreach</span> (<span class="k">double</span> sample <span class="k">in</span> data)
+        {
+            Console.WriteLine(sample);
+        }
+    }
+}
+</code></pre></td></tr></table>
+<h3><a name="Property-and-raw-data-types" class="anchor" href="#Property-and-raw-data-types">Property and raw data types</a></h3>
+<p>Most TDMS 2.0 data types directly map to .NET 5.0 data types.
+The first exception is <code>tdsTypeTimeStamp</code>, which you can read as either link:FSharp.Data.Tdms/Timestamp.fs[<code>FSharp.Data.Tdms.Timestamp</code>] (this data type corresponds to <a href="https://www.ni.com/nl-be/support/documentation/supplemental/08/labview-timestamp-overview.html[the">https://www.ni.com/nl-be/support/documentation/supplemental/08/labview-timestamp-overview.html[the</a> NI LabVIEW timestamp]), <code>System.DateTime</code>, <code>System.DateTimeOffset</code>, or <code>System.TimeSpan</code>.
+In case of <code>System.TimeSpan</code>, <code>FSharp.Data.Tdms</code> returns the time elapsed since <code>01/01/1904 00:00:00.00 UTC</code>, as per <a href="https://www.ni.com/nl-be/support/documentation/supplemental/08/labview-timestamp-overview.html[this">https://www.ni.com/nl-be/support/documentation/supplemental/08/labview-timestamp-overview.html[this</a> support document from NI].</p>
+<p>The second exception is <code>tdsTypeExtendedFloat</code>.
+Since .NET 5.0 does not support 80-bit extended precision floating point numbers, <code>FSharp.Data.Tdms</code> reads these as <a href="FSharp.Data.Tdms/Extended.fs"><code>FSharp.Data.Tdms.Extended</code></a> values.</p>
+<p>Mapping from TDMS 2.0 to .NET 5.0 data types in <code>FSharp.Data.Tdms</code></p>
+<table>
+<thead>
+<tr class="header">
+<th><p>Name</p></th>
+<th><p>TDMS 2.0 data type</p></th>
+<th><p>.NET 6.0 data type</p></th>
+<th><p>F# alias</p></th>
+<th><p>C# alias</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p>Void</p></td>
+<td><p><code>tdsTypeVoid</code></p></td>
+<td><p><a href="https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-unit.html"><code>FSharp.Core.Unit</code></a></p></td>
+<td><p><code>unit</code></p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="even">
+<td><p>8-bit signed integer</p></td>
+<td><p><code>tdsTypeI8</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.sbyte"><code>System.SByte</code></a></p></td>
+<td><p><code>int8</code></p></td>
+<td><p><code>sbyte</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>16-bit signed integer</p></td>
+<td><p><code>tdsTypeI16</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.int16"><code>System.Int16</code></a></p></td>
+<td><p><code>int16</code></p></td>
+<td><p><code>short</code></p></td>
+</tr>
+<tr class="even">
+<td><p>32-bit signed integer</p></td>
+<td><p><code>tdsTypeI32</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.int32"><code>System.Int32</code></a></p></td>
+<td><p><code>int</code></p></td>
+<td><p><code>int</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>64-bit signed integer</p></td>
+<td><p><code>tdsTypeI64</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.int64"><code>System.Int64</code></a></p></td>
+<td><p><code>int64</code></p></td>
+<td><p><code>long</code></p></td>
+</tr>
+<tr class="even">
+<td><p>8-bit unsigned integer</p></td>
+<td><p><code>tdsTypeU8</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.byte"><code>System.Byte</code></a></p></td>
+<td><p><code>uint8</code></p></td>
+<td><p><code>byte</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>16-bit unsigned integer</p></td>
+<td><p><code>tdsTypeU16</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.uint16"><code>System.UInt16</code></a></p></td>
+<td><p><code>uint16</code></p></td>
+<td><p><code>ushort</code></p></td>
+</tr>
+<tr class="even">
+<td><p>32-bit unsigned integer</p></td>
+<td><p><code>tdsTypeU32</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.uint32"><code>System.UInt32</code></a></p></td>
+<td><p><code>uint</code></p></td>
+<td><p><code>uint</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>64-bit unsigned integer</p></td>
+<td><p><code>tdsTypeU64</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.uint64"><code>System.UInt64</code></a></p></td>
+<td><p><code>uint64</code></p></td>
+<td><p><code>ulong</code></p></td>
+</tr>
+<tr class="even">
+<td><p>32-bit single-precision floating point</p></td>
+<td><ul><li><code>tdsTypeSingleFloat</code></li><li><code>tdsTypeSingleFloatWithUnit</code></li></ul></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.single?view=net-5.0"><code>System.Single</code></a></p></td>
+<td><p><code>float32</code></p></td>
+<td><p><code>float</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>64-bit double-precision floating point</p></td>
+<td><ul><li><code>tdsTypeDoubleFloat</code></li><li><code>tdsTypeDoubleFloatWithUnit</code></li></ul></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.double?view=net-5.0"><code>System.Double</code></a></p></td>
+<td><p><code>float</code></p></td>
+<td><p><code>double</code></p></td>
+</tr>
+<tr class="even">
+<td><p>80-bit extended-precision floating point</p></td>
+<td><ul><li><code>tdsTypeExtendedFloat</code></li><li><code>tdsTypeExtendedFloatWithUnit</code></li></ul></td>
+<td><p><a href="FSharp.Data.Tdms/Extended.fs"><code>FSharp.Data.Tdms.Extended</code></a></p></td>
+<td><p><code>float80</code></p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="odd">
+<td><p>Character string</p></td>
+<td><p><code>tdsTypeString</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.string"><code>System.String</code></a></p></td>
+<td><p><code>string</code></p></td>
+<td><p><code>string</code></p></td>
+</tr>
+<tr class="even">
+<td><p>Boolean</p></td>
+<td><p><code>tdsTypeBoolean</code></p></td>
+<td><p>(<a href="https://docs.microsoft.com/en-us/dotnet/api/system.boolean?view=net-5.0[`System.Boolean`]">https://docs.microsoft.com/en-us/dotnet/api/system.boolean?view=net-5.0[`System.Boolean`]</a></p></td>
+<td><p><code>bool</code></p></td>
+<td><p><code>bool</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>Timestamp</p></td>
+<td><p><code>tdsTypeTimeStamp</code></p></td>
+<td><ul><li><a href="FSharp.Data.Tdms/Timestamp.fs"><code>FSharp.Data.Tdms.Timestamp</code></a></li><li>https://docs.microsoft.com/en-us/dotnet/api/system.datetime?view=net-5.0[`System.DateTime`]</li><li>https://docs.microsoft.com/en-us/dotnet/api/system.datetimeoffset?view=net-5.0[`System.DateTimeOffset`]</li><li>https://docs.microsoft.com/en-us/dotnet/api/system.timespan?view=net-5.0[`System.TimeSpan`]</li></ul></td>
+<td><p>None</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="even">
+<td><p>32-bit single-precision floating point complex</p></td>
+<td><p><code>tdsTypeComplexSingleFloat</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.valuetuple-2?view=net-5.0[`System.ValueTuple&lt;System.Single,">https://docs.microsoft.com/en-us/dotnet/api/system.valuetuple-2?view=net-5.0[`System.ValueTuple<System.Single,</a> System.Single&gt;`]</p></td>
+<td><p><code>struct (float32 * float32)</code></p></td>
+<td><p><code>(float, float)</code></p></td>
+</tr>
+<tr class="odd">
+<td><p>64-bit double-precision floating point complex</p></td>
+<td><p><code>tdsTypeComplexDoubleFloat</code></p></td>
+<td><p><a href="https://docs.microsoft.com/en-us/dotnet/api/system.numerics.complex?view=net-5.0[`System.Numerics.Complex`]">https://docs.microsoft.com/en-us/dotnet/api/system.numerics.complex?view=net-5.0[`System.Numerics.Complex`]</a></p></td>
+<td><p>None</p></td>
+<td><p>None</p></td>
+</tr>
+</tbody>
+</table>
+
+<h3><a name="How-to-contribute" class="anchor" href="#How-to-contribute">How to contribute</a></h3>
+<p>Imposter syndrome disclaimer: I want your help. No really, I do.</p>
+<p>There might be a little voice inside that tells you you're not ready; that you need to do one more tutorial, or learn another framework, or write a few more blog posts before you can help me with this project.</p>
+<p>I assure you, that's not the case.</p>
+<p>And you don't just have to write code. You can help out by writing documentation, tests, or even by giving feedback about this work. (And yes, that includes giving feedback about the contribution guidelines.)</p>
+<p>Thank you for contributing!</p>
+<h2><a name="References" class="anchor" href="#References">References</a></h2>
+<a id="1">[1]</a> National Instruments. 2019. The NI TDMS File Format. (January 2019). Retrieved January 12, 2019 from <a href="http://www.ni.com/white-paper/3727/en/"><code>http://www.ni.com/white-paper/3727/en/</code></a>.
+
+            <div class="fsdocs-tip" id="fs1">Multiple items<br />namespace FSharp<br /><br />--------------------<br />namespace Microsoft.FSharp</div>
+<div class="fsdocs-tip" id="fs2">Multiple items<br />namespace FSharp.Data<br /><br />--------------------<br />namespace Microsoft.FSharp.Data</div>
+<div class="fsdocs-tip" id="fs3">Multiple items<br />type LiteralAttribute =
+  inherit Attribute
+  new: unit -&gt; LiteralAttribute<br /><br />--------------------<br />new: unit -&gt; LiteralAttribute</div>
+<div class="fsdocs-tip" id="fs4">[&lt;Literal&gt;]
+val Path: string = &quot;Experiment.tdms&quot;</div>
+<div class="fsdocs-tip" id="fs5">type Experiment = obj</div>
+<div class="fsdocs-tip" id="fs6">val experiment: obj</div>
+<div class="fsdocs-tip" id="fs7">module Array
+
+from Microsoft.FSharp.Collections</div>
+<div class="fsdocs-tip" id="fs8">val iter: action: (&#39;T -&gt; unit) -&gt; array: &#39;T array -&gt; unit</div>
+<div class="fsdocs-tip" id="fs9">val printfn: format: Printf.TextWriterFormat&lt;&#39;T&gt; -&gt; &#39;T</div>
+<div class="fsdocs-tip" id="fs10">namespace FSharp.Data.Tdms</div>
+<div class="fsdocs-tip" id="fs11">Multiple items<br />module File
+
+from FSharp.Data.Tdms<br /><br />--------------------<br />type File =
+  { Index: Index }
+  member TryGetPropertyValue: propertyName: string * propertyValue: byref&lt;&#39;T&gt; -&gt; bool + 2 overloads
+  member TryGetRawData: groupName: string * channelName: string * rawData: byref&lt;&#39;T array&gt; -&gt; bool
+  static member Read: path: string * writeIndex: bool -&gt; File
+  member Groups: Map&lt;string,Group&gt;</div>
+<div class="fsdocs-tip" id="fs12">val read: path: string -&gt; writeIndex: bool -&gt; File</div>
+<div class="fsdocs-tip" id="fs13">val tryRawData: group: string -&gt; channel: string -&gt; File -&gt; &#39;T array option</div>
+<div class="fsdocs-tip" id="fs14">Multiple items<br />val float: value: &#39;T -&gt; float (requires member op_Explicit)<br /><br />--------------------<br />type float = System.Double<br /><br />--------------------<br />type float&lt;&#39;Measure&gt; =
+  float</div>
+<div class="fsdocs-tip" id="fs15">module Option
+
+from Microsoft.FSharp.Core</div>
+<div class="fsdocs-tip" id="fs16">val defaultValue: value: &#39;T -&gt; option: &#39;T option -&gt; &#39;T</div>
+<div class="fsdocs-tip" id="fs17">namespace Microsoft.FSharp.Control</div>
+<div class="fsdocs-tip" id="fs18">val task: TaskBuilder</div>
+<div class="fsdocs-tip" id="fs19">val file: obj</div>
+<div class="fsdocs-tip" id="fs20">val data: obj</div>
+<div class="fsdocs-tip" id="fs21">Multiple items<br />type Async =
+  static member AsBeginEnd: computation: (&#39;Arg -&gt; Async&lt;&#39;T&gt;) -&gt; (&#39;Arg * AsyncCallback * obj -&gt; IAsyncResult) * (IAsyncResult -&gt; &#39;T) * (IAsyncResult -&gt; unit)
+  static member AwaitEvent: event: IEvent&lt;&#39;Del,&#39;T&gt; * ?cancelAction: (unit -&gt; unit) -&gt; Async&lt;&#39;T&gt; (requires delegate and &#39;Del :&gt; Delegate)
+  static member AwaitIAsyncResult: iar: IAsyncResult * ?millisecondsTimeout: int -&gt; Async&lt;bool&gt;
+  static member AwaitTask: task: Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt; + 1 overload
+  static member AwaitWaitHandle: waitHandle: WaitHandle * ?millisecondsTimeout: int -&gt; Async&lt;bool&gt;
+  static member CancelDefaultToken: unit -&gt; unit
+  static member Catch: computation: Async&lt;&#39;T&gt; -&gt; Async&lt;Choice&lt;&#39;T,exn&gt;&gt;
+  static member Choice: computations: seq&lt;Async&lt;&#39;T option&gt;&gt; -&gt; Async&lt;&#39;T option&gt;
+  static member FromBeginEnd: beginAction: (AsyncCallback * obj -&gt; IAsyncResult) * endAction: (IAsyncResult -&gt; &#39;T) * ?cancelAction: (unit -&gt; unit) -&gt; Async&lt;&#39;T&gt; + 3 overloads
+  static member FromContinuations: callback: ((&#39;T -&gt; unit) * (exn -&gt; unit) * (OperationCanceledException -&gt; unit) -&gt; unit) -&gt; Async&lt;&#39;T&gt;
+  ...<br /><br />--------------------<br />type Async&lt;&#39;T&gt;</div>
+<div class="fsdocs-tip" id="fs22">static member Async.AwaitTask: task: System.Threading.Tasks.Task -&gt; Async&lt;unit&gt;<br />static member Async.AwaitTask: task: System.Threading.Tasks.Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;</div>
+<div class="fsdocs-tip" id="fs23">static member Async.RunSynchronously: computation: Async&lt;&#39;T&gt; * ?timeout: int * ?cancellationToken: System.Threading.CancellationToken -&gt; &#39;T</div>
+
+        </div>
+
+        <!-- BEGIN SEARCH BOX: this adds support for the search box -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/JavaScript-autoComplete/1.0.4/auto-complete.css" />
+        <script type="text/javascript">var fsdocs_search_baseurl = 'https://mettekou.github.io/FSharp.Data.Tdms/';</script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lunr.js/2.3.8/lunr.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/JavaScript-autoComplete/1.0.4/auto-complete.min.js"></script>
+        <script type="text/javascript" src="https://mettekou.github.io/FSharp.Data.Tdms/content/fsdocs-search.js"></script>
+        <!-- END SEARCH BOX: this adds support for the search box -->
+    </div>
+</body>
+
+</html>
