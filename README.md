@@ -346,7 +346,7 @@ href="https://docs.microsoft.com/en-us/dotnet/api/system.numerics.complex?view=n
 The [BenchmarkDotNet](https://benchmarkdotnet.org) benchmarks in this
 section give an idea of the performance of `FSharp.Data.Tdms` when
 compared to [`TDMSReader`](https://github.com/mikeobrien/TDMSReader),
-the only other TDMS 2.0 implementation which works on .NET 5.0. Since
+the only other TDMS 2.0 implementation which works on .NET 6 and later. Since
 `TDMSReader` does not support reading TDMS index files, the benchmark
 disables this feature for `FSharp.Data.Tdms` as well, for a fair
 comparison. This means that `FSharp.Data.Tdms` may perform better in
@@ -354,173 +354,69 @@ practice for TDMS files with many raw data segments.
 
 ### Small file
 
-This benchmark reads 30,489 double-precision floating points from a
-segmented 3.1 MB TDMS 2.0 file.
+This benchmark reads 30,489 double-precision floating points from a segmented 3.1 MB TDMS 2.0 file.
 
-    BenchmarkDotNet=v0.12.1, OS=macOS 11.1 (20C69) [Darwin 20.2.0]
-    Intel Core i9-9980HK CPU 2.40GHz, 1 CPU, 16 logical and 8 physical cores
-    .NET Core SDK=5.0.101
-      [Host]        : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT DEBUG
-      .NET Core 5.0 : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT
+```ini
 
-    Job=.NET Core 5.0  Runtime=.NET Core 5.0
+BenchmarkDotNet=v0.13.2, OS=opensuse-tumbleweed 20221223
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.101
+  [Host]   : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2 DEBUG
+  .NET 7.0 : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2
 
-<table style="width:100%;">
-<colgroup>
-<col style="width: 16%" />
-<col style="width: 16%" />
-<col style="width: 16%" />
-<col style="width: 16%" />
-<col style="width: 16%" />
-<col style="width: 16%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;"><p>Method</p></td>
-<td style="text-align: left;"><p>Mean</p></td>
-<td style="text-align: left;"><p>Error</p></td>
-<td style="text-align: left;"><p>StdDev</p></td>
-<td style="text-align: left;"><p>Ratio</p></td>
-<td style="text-align: left;"><p>RatioSD</p></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><p><code>TDMSReader</code></p></td>
-<td style="text-align: left;"><p>5.531 ms</p></td>
-<td style="text-align: left;"><p>0.1049 ms</p></td>
-<td style="text-align: left;"><p>0.0930 ms</p></td>
-<td style="text-align: left;"><p>1.00</p></td>
-<td style="text-align: left;"><p>0.00</p></td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><p><code>FSharp.Data.Tdms</code>
-synchronously</p></td>
-<td style="text-align: left;"><p>1.962 ms</p></td>
-<td style="text-align: left;"><p>0.0378 ms</p></td>
-<td style="text-align: left;"><p>0.0435 ms</p></td>
-<td style="text-align: left;"><p>0.35</p></td>
-<td style="text-align: left;"><p>0.01</p></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><p><code>FSharp.Data.Tdms</code>
-asynchronously</p></td>
-<td style="text-align: left;"><p>5.061 ms</p></td>
-<td style="text-align: left;"><p>0.0503 ms</p></td>
-<td style="text-align: left;"><p>0.0471 ms</p></td>
-<td style="text-align: left;"><p>0.91</p></td>
-<td style="text-align: left;"><p>0.02</p></td>
-</tr>
-</tbody>
-</table>
+Job=.NET 7.0  Runtime=.NET 7.0
+
+```
+
+| Method              |       Mean |    Error |   StdDev | Ratio |
+| ------------------- | ---------: | -------: | -------: | ----: |
+| TDMSReader          | 1,677.4 μs |  3.55 μs |  2.96 μs |  1.00 |
+| FSharpDataTdms      |   741.4 μs |  4.04 μs |  3.78 μs |  0.44 |
+| FSharpDataTdmsAsync |   882.0 μs | 13.53 μs | 12.65 μs |  0.52 |
 
 ### Medium-sized file
 
-This benchmark reads a channel of 43,200 strings from a segmented 138.1
-MB TDMS 2.0 file.
+This benchmark reads a channel of 43,200 strings from a segmented 138.1 MB TDMS 2.0 file.
 
-    BenchmarkDotNet=v0.12.1, OS=macOS 11.1 (20C69) [Darwin 20.2.0]
-    Intel Core i9-9980HK CPU 2.40GHz, 1 CPU, 16 logical and 8 physical cores
-    .NET Core SDK=5.0.101
-      [Host]        : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT DEBUG
-      .NET Core 5.0 : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT
+```ini
 
-    Job=.NET Core 5.0  Runtime=.NET Core 5.0
+BenchmarkDotNet=v0.13.2, OS=opensuse-tumbleweed 20221223
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.101
+  [Host]   : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2 DEBUG
+  .NET 7.0 : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2
 
-<table>
-<colgroup>
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;"><p>Method</p></td>
-<td style="text-align: left;"><p>Mean</p></td>
-<td style="text-align: left;"><p>Error</p></td>
-<td style="text-align: left;"><p>StdDev</p></td>
-<td style="text-align: left;"><p>Ratio</p></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><p><code>TDMSReader</code></p></td>
-<td style="text-align: left;"><p>12.334 s</p></td>
-<td style="text-align: left;"><p>0.2287 s</p></td>
-<td style="text-align: left;"><p>0.2139 s</p></td>
-<td style="text-align: left;"><p>1.00</p></td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><p><code>FSharp.Data.Tdms</code>
-synchronously</p></td>
-<td style="text-align: left;"><p>4.400 s</p></td>
-<td style="text-align: left;"><p>0.0370 s</p></td>
-<td style="text-align: left;"><p>0.0328 s</p></td>
-<td style="text-align: left;"><p>0.36</p></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><p><code>FSharp.Data.Tdms</code>
-asynchronously</p></td>
-<td style="text-align: left;"><p>6.797 s</p></td>
-<td style="text-align: left;"><p>0.0981 s</p></td>
-<td style="text-align: left;"><p>0.0918 s</p></td>
-<td style="text-align: left;"><p>0.55</p></td>
-</tr>
-</tbody>
-</table>
+Job=.NET 7.0  Runtime=.NET 7.0
+
+```
+
+| Method              |    Mean |    Error |   StdDev | Ratio |
+| ------------------- | ------: | -------: | -------: | ----: |
+| TDMSReader          | 8.570 s | 0.0539 s | 0.0505 s |  1.00 |
+| FSharpDataTdms      | 2.581 s | 0.0105 s | 0.0098 s |  0.30 |
+| FSharpDataTdmsAsync | 2.691 s | 0.0526 s | 0.0516 s |  0.31 |
 
 ### Large file
 
-This benchmark reads a channel of 779,297 double-precision floating
-points from a segmented 1.54 GB TDMS 2.0 file.
+This benchmark reads a channel of 779,297 double-precision floating points from a segmented 1.54 GB TDMS 2.0 file.
 
-    BenchmarkDotNet=v0.12.1, OS=macOS 11.1 (20C69) [Darwin 20.2.0]
-    Intel Core i9-9980HK CPU 2.40GHz, 1 CPU, 16 logical and 8 physical cores
-    .NET Core SDK=5.0.101
-      [Host]        : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT DEBUG
-      .NET Core 5.0 : .NET Core 5.0.1 (CoreCLR 5.0.120.57516, CoreFX 5.0.120.57516), X64 RyuJIT
+```ini
 
-    Job=.NET Core 5.0  Runtime=.NET Core 5.0
+BenchmarkDotNet=v0.13.2, OS=opensuse-tumbleweed 20221223
+AMD Ryzen 9 5950X, 1 CPU, 32 logical and 16 physical cores
+.NET SDK=7.0.101
+  [Host]   : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2 DEBUG
+  .NET 7.0 : .NET 7.0.1 (7.0.122.56804), X64 RyuJIT AVX2
 
-<table>
-<colgroup>
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-</colgroup>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;"><p>Method</p></td>
-<td style="text-align: left;"><p>Mean</p></td>
-<td style="text-align: left;"><p>Error</p></td>
-<td style="text-align: left;"><p>StdDev</p></td>
-<td style="text-align: left;"><p>Ratio</p></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><p><code>TDMSReader</code></p></td>
-<td style="text-align: left;"><p>2.145 s</p></td>
-<td style="text-align: left;"><p>0.0242 s</p></td>
-<td style="text-align: left;"><p>0.0214 s</p></td>
-<td style="text-align: left;"><p>1.00</p></td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><p><code>FSharp.Data.Tdms</code>
-synchronously</p></td>
-<td style="text-align: left;"><p>1.103 s</p></td>
-<td style="text-align: left;"><p>0.0123 s</p></td>
-<td style="text-align: left;"><p>0.0103 s</p></td>
-<td style="text-align: left;"><p>0.52</p></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><p><code>FSharp.Data.Tdms</code>
-asynchronously</p></td>
-<td style="text-align: left;"><p>1.953 s</p></td>
-<td style="text-align: left;"><p>0.0167 s</p></td>
-<td style="text-align: left;"><p>0.0157 s</p></td>
-<td style="text-align: left;"><p>0.91</p></td>
-</tr>
-</tbody>
-</table>
+Job=.NET 7.0  Runtime=.NET 7.0
+
+```
+
+| Method              |     Mean |   Error |  StdDev | Ratio |
+| ------------------- | -------: | ------: | ------: | ----: |
+| TDMSReader          | 996.0 ms | 8.77 ms | 7.77 ms |  1.00 |
+| FSharpDataTdms      | 522.1 ms | 5.81 ms | 5.43 ms |  0.52 |
+| FSharpDataTdmsAsync | 654.5 ms | 6.84 ms | 6.07 ms |  0.66 |
 
 ## How to contribute
 
